@@ -59,35 +59,33 @@ while not done:  # main game loop
         player1.addSoldier()
 
     if pressed[pygame.K_t]:
-        pass
+        for object in all_static_objects:
+            object.print()
 
-    if mouse_clicks != pygame.mouse.get_pressed():
-
+    if (mouse_clicks != pygame.mouse.get_pressed()):
         # al je nekdo pritisnu na miško al pa spustu knof
         lev, sredn, desn = mouse_clicks
         x1, y1 = mouse_position
 
-        # I need new values
+        # print("Prej je blo tkole: ", lev, sredn, desn)
         mouse_clicks = pygame.mouse.get_pressed()
-        x2, y2 = pygame.mouse.get_pos()
+        mouse_position = pygame.mouse.get_pos()
 
-        if lev + desn + sredn > sum(mouse_clicks):
-            for object in list(all_static_objects + all_moveable_objects):
-                # Če bo spodnji if true, pomeni to, da je ta objekt selectan
-                print("ja pa pizda, da sm enga selectu")
+        x2, y2 = mouse_position
+
+        if (lev + desn + sredn > sum(mouse_clicks)):
+
+            for object in all_static_objects:
                 if x1 < object.x < x2 and y1 < object.y < y2:
-
-                    print("ja AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAu")
                     object.selected = 1
+                    object.print()
                     object.setDestination(object.x, object.y)
-
                 else:
                     # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
                     if sredn:
                         for selected_object in all_static_objects:
                             if selected_object.selected:
-                                selected_object.setDestination(x2, y2)
-                                selected_object.goTo()
+                                selected_object.setDestination(mouse_position[0], mouse_position[1])
                     else:
                         object.selected = 0
 
