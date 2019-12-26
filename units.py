@@ -10,9 +10,10 @@ from datetime import datetime
 class Unit:
     speed: float
 
-    def __init__(self, screen, x, y, image_path, name):
+    def __init__(self, screen, x, y, image_path, name, player):
         self.x = x # kje na screenu sploh je
         self.y = y
+        self.player = player
         self.speed = 1.5 # njegova hitrost
         self.direction_x = 0 # kam more it
         self.direction_y = 0
@@ -37,6 +38,7 @@ class Unit:
         self.attack = 5
 
     def print(self):
+        print("Player: ", self.player)
         print("Name: ", self.name)
         print("X : ", self.x)
         print("Y : ", self.y)
@@ -99,9 +101,9 @@ class Unit:
         self.hp = hp
 
 class Soldier(Unit):
-    def __init__(self, screen, x, y, image_path, name):
+    def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
-        super().__init__(screen, x, y, image_path, name)
+        super().__init__(screen, x, y, image_path, name, player)
         self.moveable = 1
 
     def fight(self):
@@ -116,9 +118,9 @@ class Soldier(Unit):
 
 class House(Unit):
 
-    def __init__(self, screen, x, y, image_path, name):
+    def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
-        super().__init__(screen, x, y, image_path, name)
+        super().__init__(screen, x, y, image_path, name, player)
         self.setHp(500)
 
 
@@ -136,7 +138,7 @@ class Player:
 
         if time.time() - self.last_soldier_added > 3:
             soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/tank.png', 'Soldier' + str(len(self.army)))
+                              './data/' + str(self.player) + '/tank.png', 'Soldier' + str(len(self.army)), self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             return soldier

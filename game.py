@@ -13,6 +13,7 @@ def updateScreen():
         else:
             screen.blit(object_on_screen.image, (object_on_screen.x, object_on_screen.y))
 
+
 # nevem čist točno zakaj mam to
 _image_library = {}
 
@@ -58,8 +59,15 @@ while not done:  # main game loop
     if pressed[pygame.K_RIGHT]:
         players[which_player].army[0].move("right")
 
+    if pressed[pygame.K_q]:
+        which_player = 0
+
+    if pressed[pygame.K_e]:
+        which_player = 1
+
     if pressed[pygame.K_r]:
-        pass
+        for x in all_static_objects:
+            x.print()
 
     if pressed[pygame.K_SPACE]:
         which_player = 1 - which_player
@@ -69,12 +77,10 @@ while not done:  # main game loop
             object.print()
 
     if pygame.mouse.get_pressed()[0]:
-        #torej je lev prtisjen
+        # torej je lev prtisjen
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        print("x:", mouse_x)
-        print("y:", mouse_y)
-
+        # IF USERINTERFACE
         if 658 < mouse_x < 785:
             # pomeni, da pritiska nekje po tem UIju
             if 20 < mouse_y < 65:
@@ -85,9 +91,19 @@ while not done:  # main game loop
             elif 235 < mouse_y < 285:
                 print("GOLD : ")
             elif 317 < mouse_y < 373:
+                print("ADD Soldier")
                 soldier = players[which_player].addSoldier()
                 if soldier:
                     all_static_objects.append(soldier)
+            elif 395 < mouse_y < 455:
+                print("ADD Soldier2")
+            elif 473 < mouse_y < 532:
+                print("ADD Soldier3")
+            elif 555 < mouse_y < 613:
+                print("ADD Soldier4")
+            elif 636 < mouse_y < 695:
+                print("ADD Soldier5")
+
 
     if mouse_clicks != pygame.mouse.get_pressed():
         # al je nekdo pritisnu na miško al pa spustu knof
@@ -108,9 +124,16 @@ while not done:  # main game loop
             for object in all_static_objects:
                 if x[0] < object.center_x < x[1] and y[0] < object.center_y < y[1]:
                     # To pomeni, da je objekt znotraj recttangle-a, ki ga z miško obdaja
-                    object.selected = 1
-                    object.print()
-                    #object.setDestination(object.x, object.y)
+                    print("object.plyer", object.player)
+                    print("which_player", which_player)
+                    if (which_player == 0 and object.player == "player1") or (which_player == 1 and object.player == "player2"):
+                        # Če hoče taprav player premikat taprave unite
+                        object.selected = 1
+                        object.print()
+                    else:
+                        object.selected = 0
+                        print("jebemu mater")
+
                 else:
                     # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
                     if sredn:
