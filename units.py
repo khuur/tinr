@@ -6,20 +6,20 @@ from functions import *
 import time
 from datetime import datetime
 
-
 class Unit:
     speed: float
 
     def __init__(self, screen, x, y, image_path, name, player):
-        self.x = x # kje na screenu sploh je
+        self.x = x  # kje na screenu sploh je
         self.y = y
         self.player = player
-        self.speed = 1.5 # njegova hitrost
-        self.direction_x = 0 # kam more it
+        self.speed = 1.5  # njegova hitrost
+        self.direction_x = 0  # kam more it
         self.direction_y = 0
-        self.selected = 0 # a je ta unit selectan?
-        self.moveable = 0 # a se sploh lahko premika?
-        self.distance = 0 # Kok stran od cilja j e
+        self.selected = 0  # a je ta unit selectan?
+        self.moveable = 0  # a se sploh lahko premika?
+        self.moving = True
+        self.distance = 0  # Kok stran od cilja j e
         self.name = name  # Kako je temu unitu bolj natančno ime
         self.screen = screen  # kam sploh rišeš
         self.image = pygame.image.load(image_path)  # prvi sprite
@@ -28,14 +28,16 @@ class Unit:
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
-        self.center_x = self.x + (self.rect[2] // 2) # Center tega unita
+        self.center_x = self.x + (self.rect[2] // 2)  # Center tega unita
         self.center_y = self.y + (self.rect[3] // 2)
 
-        self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2 # Radij tega unita
+        self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
 
         self.max_hp = 30
         self.hp = self.max_hp
         self.attack = 5
+        self.dead = False
+        self.last_attack = time.time()
 
     def print(self):
         print("Player: ", self.player)
@@ -43,6 +45,8 @@ class Unit:
         print("X : ", self.x)
         print("Y : ", self.y)
         print("R : ", self.r)
+        print("hp : ", self.hp)
+        print("dead : ", self.dead)
         print("SELECTED : ", self.selected)
         time.sleep(0.3)
         print("\n")
@@ -70,14 +74,46 @@ class Unit:
         elif which_one == "selected":
             self.image_selected = getImage(path)
 
-    def goTo(self):
+    def goTo(self, all_static_objects):
         """
         Ta funkcija premakne ta unit tja kamor je namenjen (direction_x, y)
         :return: razdaljo od cilja
         """
+
+        self.moving = True
         self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
 
+        a_se_zabijam_v_koga = []
+
+        for object in all_static_objects:
+
+            a_sm_se_zabil = collisionDetection(self, object)
+            if a_sm_se_zabil:
+                if self.player != object.player:
+                    # pomen, da sm se zabil v nasprotnika
+                    self.fight(object)
+                # torej sem najdu v koga se zabijam
+                # torej morm pogruntat kam se morm umaknt
+                if object.x < self.x:
+                    self.x += 5
+                else:
+                    self.x -= 5
+
+                if object.y < self.y:
+                    self.y += 5
+                else:
+                    self.y -= 5
+
+                self.updateCenter()
+
+            a_se_zabijam_v_koga.append(a_sm_se_zabil)
+
+        if any(a_se_zabijam_v_koga):
+            #print("zabiu sm se v nekoga")
+            return self.distance
+
         if self.distance < 10:
+            self.moving = False
             return self.distance
 
         if self.center_x < self.direction_x:
@@ -100,16 +136,26 @@ class Unit:
     def setHp(self, hp):
         self.hp = hp
 
+    def fight(self, object):
+
+        if time.time() - self.last_attack > 1:
+            #print("enga sm užgau")
+            self.hp -= object.attack
+            object.hp -= self.attack
+            self.last_attack = time.time()
+            object.last_attack = time.time()
+
+            if self.hp <= 0:
+                self.dead = True
+            if object.hp <= 0:
+                object.dead = True
+
+
 class Soldier(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.moveable = 1
-
-    def fight(self):
-        print("now i'm fighting")
-        print("HP : ", self.hp)
-        print("Attack : ", self.attack)
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
@@ -124,7 +170,6 @@ class House(Unit):
         self.setHp(500)
 
 
-
 class Player:
 
     def __init__(self, player, screen):
@@ -135,7 +180,6 @@ class Player:
         self.last_soldier_added = time.time()
 
     def addSoldier(self):
-
         if time.time() - self.last_soldier_added > 3:
             soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
                               './data/' + str(self.player) + '/tank.png', 'Soldier' + str(len(self.army)), self.player)
@@ -143,5 +187,3 @@ class Player:
             self.last_soldier_added = time.time()
             return soldier
         return 0
-
-

@@ -16,14 +16,7 @@ def collisionDetection(object1, object2, be):
     # Returns True if object ARE IN eachother
     return False
     """
-    if object1.name == object2.name:
-        return False
-
-    sum_r = object1.r + object2.r  # Sum of both radius
-    distance = euclideanDistance(object1, object2)  # Actual distance between objects
-
-    # if radius is larger than acutal distance, means that they are colideing
-    return sum_r > distance
+    
 """
 
 

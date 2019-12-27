@@ -1,9 +1,17 @@
+import pygame
+import os
+from math import sqrt
+import units
+from functions import *
+import time
 
-def collisionDetection(object1, object2, be):
-    # Returns True if object ARE IN eachother
-    return False
-    """
-    if object1.name == object2.name:
+
+def euclideanDistance(object1, object2):
+    return sqrt((object2.x - object1.x) ** 2 + (object2.y - object1.y) ** 2)
+
+
+def collisionDetection(object1, object2):
+    if (str(object1.player) + str(object1.name)) == (str(object2.player) + str(object2.name)):
         return False
 
     sum_r = object1.r + object2.r  # Sum of both radius
@@ -11,7 +19,7 @@ def collisionDetection(object1, object2, be):
 
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
-"""
+
 
 
 def getImage(path):
@@ -22,14 +30,3 @@ def getImage(path):
         image = pygame.image.load(canonicalized_path)
         _image_library[path] = image
     return image
-
-
-def euclideanDistance(object1, object2):
-    x1 = object1.x
-    y1 = object1.y
-    x2 = object2.x
-    y2 = object2.y
-
-    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-

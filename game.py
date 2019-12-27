@@ -8,10 +8,13 @@ import time
 
 def updateScreen():
     for object_on_screen in all_static_objects:
-        if object_on_screen.selected:
-            screen.blit(object_on_screen.image_selected, (object_on_screen.x, object_on_screen.y))
+        if object_on_screen.dead:
+            all_static_objects.remove(object_on_screen)
         else:
-            screen.blit(object_on_screen.image, (object_on_screen.x, object_on_screen.y))
+            if object_on_screen.selected:
+                screen.blit(object_on_screen.image_selected, (object_on_screen.x, object_on_screen.y))
+            else:
+                screen.blit(object_on_screen.image, (object_on_screen.x, object_on_screen.y))
 
 
 # nevem čist točno zakaj mam to
@@ -37,9 +40,6 @@ done = False
 players = [units.Player('player1', screen), units.Player('player2', screen)]
 
 which_player = 0
-soldier = players[0].addSoldier()
-if soldier:
-    all_static_objects.append(soldier)
 clock = pygame.time.Clock()
 
 while not done:  # main game loop
@@ -66,9 +66,11 @@ while not done:  # main game loop
         which_player = 1
 
     if pressed[pygame.K_r]:
+        print("*" * 50)
         for x in all_static_objects:
             x.print()
 
+        print("*" * 50)
     if pressed[pygame.K_SPACE]:
         which_player = 1 - which_player
 
@@ -91,7 +93,7 @@ while not done:  # main game loop
             elif 235 < mouse_y < 285:
                 print("GOLD : ")
             elif 317 < mouse_y < 373:
-                print("ADD Soldier")
+                #print("ADD Soldier")
                 soldier = players[which_player].addSoldier()
                 if soldier:
                     all_static_objects.append(soldier)
@@ -103,7 +105,6 @@ while not done:  # main game loop
                 print("ADD Soldier4")
             elif 636 < mouse_y < 695:
                 print("ADD Soldier5")
-
 
     if mouse_clicks != pygame.mouse.get_pressed():
         # al je nekdo pritisnu na miško al pa spustu knof
@@ -124,15 +125,12 @@ while not done:  # main game loop
             for object in all_static_objects:
                 if x[0] < object.center_x < x[1] and y[0] < object.center_y < y[1]:
                     # To pomeni, da je objekt znotraj recttangle-a, ki ga z miško obdaja
-                    print("object.plyer", object.player)
-                    print("which_player", which_player)
-                    if (which_player == 0 and object.player == "player1") or (which_player == 1 and object.player == "player2"):
+                    if (which_player == 0 and object.player == "player1") or (
+                            which_player == 1 and object.player == "player2"):
                         # Če hoče taprav player premikat taprave unite
                         object.selected = 1
-                        object.print()
                     else:
                         object.selected = 0
-                        print("jebemu mater")
 
                 else:
                     # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
@@ -140,13 +138,13 @@ while not done:  # main game loop
                         for selected_object in all_static_objects:
                             if selected_object.selected:
                                 selected_object.setDestination(mouse_position[0], mouse_position[1])
-                                selected_object.goTo()
+                                selected_object.goTo(all_static_objects)
                     else:
                         object.selected = 0
 
     for selected_object in all_static_objects:
         if selected_object.distance > 10:
-            selected_object.goTo()
+            selected_object.goTo(all_static_objects)
 
     x, y = mouse_position
 
