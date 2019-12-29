@@ -33,9 +33,15 @@ class Unit:
 
         self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
 
+        self.cost = 0
+
         self.max_hp = 30
         self.hp = self.max_hp
         self.attack = 5
+        self.range = 10
+        self.exp = 0
+        self.exp_worth = 0
+
         self.dead = False
         self.last_attack = time.time()
 
@@ -45,7 +51,8 @@ class Unit:
         print("X : ", self.x)
         print("Y : ", self.y)
         print("R : ", self.r)
-        print("hp : ", self.hp)
+        print("hp : {} / {}".format(self.hp, self.max_hp))
+        print("attack : {} ".format(self.attack))
         print("dead : ", self.dead)
         print("SELECTED : ", self.selected)
         time.sleep(0.3)
@@ -146,9 +153,16 @@ class Unit:
             object.last_attack = time.time()
 
             if self.hp <= 0:
-                self.dead = True
+                self.die()
+                object.exp += self.exp_worth
             if object.hp <= 0:
-                object.dead = True
+                object.die()
+                self.exp += object.exp_worth
+
+    def die(self):
+        self.dead = True
+        print("I died in battle for Azeroth!")
+
 
 
 class Soldier(Unit):
@@ -156,9 +170,49 @@ class Soldier(Unit):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.moveable = 1
+        self.hp = 20
+        self.max_hp = 20
+        self.attack = 10
+        self.range = 15
+        self.cost = 50
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
+        self.attack *= 1.2
+        self.hp = self.max_hp
+
+
+class Archer(Unit):
+    def __init__(self, screen, x, y, image_path, name, player):
+        """Initialize the soldier and set its starting position."""
+        super().__init__(screen, x, y, image_path, name, player)
+        self.moveable = 1
+        self.hp = 20
+        self.max_hp = 20
+        self.attack = 10
+        self.range = 50
+        self.cost = 70
+
+    def levelUp(self):
+        self.max_hp = self.max_hp * 2
+        self.attack *= 1.5
+        self.hp = self.max_hp
+        self.range *= 1.1
+
+
+class Tank(Unit):
+    def __init__(self, screen, x, y, image_path, name, player):
+        """Initialize the soldier and set its starting position."""
+        super().__init__(screen, x, y, image_path, name, player)
+        self.moveable = 1
+        self.speed = 0.5
+        self.attack = 20
+        self.range = 70
+        self.cost = 200
+
+    def levelUp(self):
+        self.max_hp = self.max_hp * 2
+        self.attack *= 1.8
         self.hp = self.max_hp
 
 
@@ -177,13 +231,45 @@ class Player:
         self.army = []
         self.buildings = []
         self.screen = screen
+        self.gold = 300
+
         self.last_soldier_added = time.time()
+        self.soldier_spawn_rate = 3
+
+        self.last_archer_added = time.time()
+        self.archer_spawn_rate = 2
+
+        self.last_tank_added = time.time()
+        self.tank_spawn_rate = 5
 
     def addSoldier(self):
-        if time.time() - self.last_soldier_added > 3:
+        if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
             soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/tank.png', 'Soldier' + str(len(self.army)), self.player)
+                              './data/' + str(self.player) + '/soldier.png', 'Soldier' + str(len(self.army)), self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
+            self.gold -= 50
+            return soldier
+        return 0
+
+    def addArcher(self):
+        if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0:
+            soldier = Archer(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
+                              './data/' + str(self.player) + '/archer.png', 'Archer' + str(len(self.army)),
+                              self.player)
+            self.army.append(soldier)
+            self.last_soldier_added = time.time()
+            self.gold -= 70
+            return soldier
+        return 0
+
+    def addTank(self):
+        if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0:
+            soldier = Tank(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
+                              './data/' + str(self.player) + '/tank.png', 'Tank' + str(len(self.army)),
+                              self.player)
+            self.army.append(soldier)
+            self.last_soldier_added = time.time()
+            self.gold -= 200
             return soldier
         return 0

@@ -98,9 +98,13 @@ while not done:  # main game loop
                 if soldier:
                     all_static_objects.append(soldier)
             elif 395 < mouse_y < 455:
-                print("ADD Soldier2")
+                archer = players[which_player].addArcher()
+                if archer:
+                    all_static_objects.append(archer)
             elif 473 < mouse_y < 532:
-                print("ADD Soldier3")
+                tank = players[which_player].addTank()
+                if tank:
+                    all_static_objects.append(tank)
             elif 555 < mouse_y < 613:
                 print("ADD Soldier4")
             elif 636 < mouse_y < 695:
@@ -155,3 +159,67 @@ while not done:  # main game loop
 
     pygame.display.flip()
     clock.tick(60)
+
+
+"""
+import pygame 
+x = 0
+y = 0
+running = True
+width = 800
+height = 600
+zoom = 1
+allRects = []
+
+screen = pygame.display.set_mode((width,height))
+
+class Shape:
+    def __init__(self,x,y,w,h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+def graphics(deltaX,deltaY):
+    screen.fill((255,255,255))
+    for rectangle in allRects:
+        toDraw = True
+        normalX =zoom*(-(width/2)+(rectangle.x - deltaX))
+        normalY =zoom*((height/2) -(rectangle.y-deltaY))
+        topLeftX = width/2+normalX
+        topLeftY = height/2 - normalY
+        if topLeftX + rectangle.w < 0 or topLeftX>width:
+            toDraw= False
+        elif topLeftY> height or topLeftY+rectangle.h<0:
+            toDraw= False
+        else:
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(topLeftX,topLeftY,zoom*rectangle.w,zoom*rectangle.h))
+
+allRects.append(Shape(100,30,142,14))
+allRects.append(Shape(100,120,20,14))
+allRects.append(Shape(0,30,14,174))
+allRects.append(Shape(40,340,114,14))
+
+while running:
+    graphics(x,y)
+    for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+    key = pygame.key.get_pressed()
+    if key[pygame.K_UP]:
+        zoom = zoom*1.01
+    if key[pygame.K_DOWN]:
+        zoom = zoom*0.99
+    if zoom<0:
+        zoom = 0
+
+    if key[pygame.K_w]:
+        y-=1/zoom * 2
+    if key[pygame.K_s]:
+        y+=1/zoom * 2
+    if key[pygame.K_a]:
+        x-=1/zoom * 2
+    if key[pygame.K_d]:
+        x+=1/zoom * 2       
+
+    pygame.display.update()
+"""
