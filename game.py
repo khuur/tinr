@@ -6,35 +6,92 @@ from functions import *
 import time
 
 
+# ------------------------------------------------------------------------
+# Functions
+# ------------------------------------------------------------------------
+
 def updateScreen():
-    for object_on_screen in all_static_objects:
-        if object_on_screen.dead:
-            all_static_objects.remove(object_on_screen)
-        else:
-            if object_on_screen.selected:
-                screen.blit(object_on_screen.image_selected, (object_on_screen.x, object_on_screen.y))
+    for object_on_screen in all_objects_on_screen:  # Gre čez vse objekte
+        if object_on_screen.dead:  # Če je ta objekt "mrtu"
+            all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
+        else:  # Torej je objekt "živ"
+            if object_on_screen.selected:  # Če ma atribut 'selected' na true
+                screen.blit(object_on_screen.image, # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            (object_on_screen.x, object_on_screen.y))  # Izriše en 'selected' sprite
             else:
-                screen.blit(object_on_screen.image, (object_on_screen.x, object_on_screen.y))
+                screen.blit(object_on_screen.image,
+                            (object_on_screen.x, object_on_screen.y))  # Drugače pa 'normaln' sprite
+
+    font = pygame.font.SysFont("comicsansms", 25)
 
 
-# nevem čist točno zakaj mam to
-_image_library = {}
+    text = font.render("Player1", True, (245, 245, 0))
+    screen.blit(text, (WIDTH - 140, 24))
 
-all_static_objects = []  # to bo namenjen vsem objektom, ki bojo statični
-all_moveable_objects = []  # to bo namenjem vsem objektom, ki se premikajo
-selected_objects = []  # to so pa tisti objekti, ki so selectani
+    text = font.render("Soldiers: "+ str(players[0].number_of_soldiers), True, (245, 245, 0))
+    screen.blit(text, (WIDTH - 140, 105))
 
-# širina in višina okna
-WIDTH = 800
-HEIGHT = 800
+    text = font.render("Archers: "+ str(players[0].number_of_archers), True, (245, 245, 0))
+    screen.blit(text, (WIDTH - 140, 135))
 
-mouse_clicks = (0, 0, 0)
-mouse_position = (411, 348)
+    text = font.render("Tanks: " + str(players[0].number_of_tanks), True, (245, 245, 0))
+    screen.blit(text, (WIDTH - 140, 165))
 
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-background_image = pygame.image.load("./data/map.jpg").convert()
-user_interface = pygame.image.load("./data/user_interface1.png").convert()
+    text = font.render(str(players[0].gold) + " G", True, (245, 245, 0))
+    screen.blit(text, (WIDTH - 140, 242))
+
+
+def updateScreen1():
+    for object_on_screen in all_objects_on_screen:  # Gre čez vse objekte
+        if object_on_screen.dead:  # Če je ta objekt "mrtu"
+            all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
+        else:  # Torej je objekt "živ"
+            if object_on_screen.selected:  # Če ma atribut 'selected' na true
+                screen.blit(object_on_screen.image, # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            (object_on_screen.x, object_on_screen.y))  # Izriše en 'selected' sprite
+            else:
+                screen.blit(object_on_screen.image,
+                            (object_on_screen.x, object_on_screen.y))  # Drugače pa 'normaln' sprite
+
+                normalX = zoom * (-(WIDTH / 2) + (object_on_screen.x - deltaX))
+                normalY = zoom * ((HEIGHT / 2) - (object_on_screen.y - deltaY))
+                topLeftX = width / 2 + normalX
+                topLeftY = height / 2 - normalY
+                if topLeftX + object_on_screen.w < 0 or topLeftX > width:
+                    toDraw = False
+                elif topLeftY > height or topLeftY + object_on_screen.h < 0:
+                    toDraw = False
+                else:
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * object_on_screen.w, zoom * object_on_screen.h))
+
+
+# ------------------------------------------------------------------------
+# Starting data
+# ------------------------------------------------------------------------
+start_time = time.time()  # Da lahko trackam v keri sekundi igre sem
+all_objects_on_screen = []  # to bo namenjen vsem objektom
+
+WIDTH = 1300  # Širina okna
+HEIGHT = 750  # Višina okna
+
+mouse_clicks = (0, 0, 0)  # Keri knofi na miški so prtisjeni
+mouse_position = (411, 348)  # Kje je miška trenutno
+
+pygame.init()  # Da se pygame začne
+screen = pygame.display.set_mode((WIDTH, HEIGHT))  # Kam bom sploh risu stvari
+pygame.display.set_caption("Kris's game")  # Da mam svoj caption :3
+background_image = pygame.image.load("./data/blurred_map.jpg").convert()  # Kar je v ozadju narisano
+user_interface = pygame.image.load("./data/user_interface1.png").convert()  # Da mam še UI na desni strani
+start_menu = pygame.image.load("./data/start_menu.png").convert()  # Da mam še UI na desni strani
+soldier_image = pygame.image.load("./data/player1/soldier.png").convert()  # Da mam še UI na desni strani
+archer_image = pygame.image.load("./data/player1/archer.png").convert()  # Da mam še UI na desni strani
+tank_image = pygame.image.load("./data/player1/tank.png").convert()  # Da mam še UI na desni strani
+
+
+soldr = units.Soldier(screen, 300,300, "./data/player1/soldier.png", "soldr", "player000")
+arcr = units.Archer(screen, 300,300, "./data/player1/archer.png", "arcer", "player000")
+tenk = units.Soldier(screen, 300,300, "./data/player1/tank.png", "tenk", "player000")
+
 done = False
 
 players = [units.Player('player1', screen), units.Player('player2', screen)]
@@ -42,11 +99,152 @@ players = [units.Player('player1', screen), units.Player('player2', screen)]
 which_player = 0
 clock = pygame.time.Clock()
 
-while not done:  # main game loop
+ai_commands = [(4.5, "addsoldier")]
+
+# ------------------------------------------------------------------------
+# Stuff required for moving camera
+# ------------------------------------------------------------------------
+if False:
+    x = 0
+    y = 0
+    running = False
+    width = 800
+    height = 600
+    zoom = 1
+    allRects = []
+
+
+    class Shape:
+        def __init__(self, x, y, w, h):
+            self.x = x
+            self.y = y
+            self.w = w
+            self.h = h
+
+
+    def graphics(deltaX, deltaY):
+        screen.fill((255, 255, 255))
+        for rectangle in allRects:
+            toDraw = True
+            normalX = zoom * (-(width / 2) + (rectangle.x - deltaX))
+            normalY = zoom * ((height / 2) - (rectangle.y - deltaY))
+            topLeftX = width / 2 + normalX
+            topLeftY = height / 2 - normalY
+            if topLeftX + rectangle.w < 0 or topLeftX > width:
+                toDraw = False
+            elif topLeftY > height or topLeftY + rectangle.h < 0:
+                toDraw = False
+            else:
+                pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
+
+
+    def trololo(deltaX, deltaY):
+        for rectangle in allRects:
+            toDraw = True
+            normalX = zoom * (-(width / 2) + (rectangle.x - deltaX))
+            normalY = zoom * ((height / 2) - (rectangle.y - deltaY))
+            topLeftX = width / 2 + normalX
+            topLeftY = height / 2 - normalY
+            if topLeftX + rectangle.w < 0 or topLeftX > width:
+                toDraw = False
+            elif topLeftY > height or topLeftY + rectangle.h < 0:
+                toDraw = False
+            else:
+                pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
+
+
+
+
+
+    allRects.append(Shape(100, 30, 142, 14))
+    allRects.append(Shape(100, 120, 20, 14))
+    allRects.append(Shape(0, 30, 14, 174))
+    allRects.append(Shape(40, 340, 114, 14))
+
+    while running:
+        graphics(x, y)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        key = pygame.key.get_pressed()
+        if key[pygame.K_UP]:
+            zoom = zoom * 1.01
+        if key[pygame.K_DOWN]:
+            zoom = zoom * 0.99
+        if zoom < 0:
+            zoom = 0
+
+        if key[pygame.K_w]:
+            y -= 1 / zoom * 2
+        if key[pygame.K_s]:
+            y += 1 / zoom * 2
+        if key[pygame.K_a]:
+            x -= 1 / zoom * 2
+        if key[pygame.K_d]:
+            x += 1 / zoom * 2
+
+        pygame.display.update()
+
+# ------------------------------------------------------------------------
+# Main game loop
+# ------------------------------------------------------------------------
+selected = False
+game = ""
+settings = ""
+while not selected:
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
+        if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
+            done = True  # Če je, pol zaključi z igro
+            selected = True  # Če je, pol zaključi z igro
+
+    if pygame.mouse.get_pressed()[0]:
+        # torej je lev prtisjen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        print("\n\nX: ", mouse_x)
+        print("Y: ", mouse_y)
+
+
+        # IF USER INTERFACE
+        if 285 < mouse_x < 1014:
+            # pomeni, da pritiska nekje po tem UIju
+            if 35 < mouse_y < 222:
+                selected = True
+                game = True
+            elif 294 < mouse_y < 475:
+                selected = True
+                settings = True
+            elif 539 < mouse_y < 725:
+                selected = True
+                done = True
+    screen.blit(start_menu,(0,-20))
+    pygame.display.flip()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+while not done and game:  # main game loop
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
+            done = True  # Če je, pol zaključi z igro
 
     pressed = pygame.key.get_pressed()
 
@@ -65,25 +263,32 @@ while not done:  # main game loop
     if pressed[pygame.K_e]:
         which_player = 1
 
+    if pressed[pygame.K_g]:
+        #print(all_objects_on_screen[0].rect)
+        #all_objects_on_screen[0].scalePicture(1.2)
+
+        time.sleep(1)
+
+    if pressed[pygame.K_h]:
+        all_objects_on_screen[0].hp = all_objects_on_screen[0].max_hp
+
+    if pressed[pygame.K_j]:
+        which_player = 1
+
+
+
     if pressed[pygame.K_r]:
         print("*" * 50)
-        for x in all_static_objects:
+        for x in all_objects_on_screen:
             x.print()
-
         print("*" * 50)
-    if pressed[pygame.K_SPACE]:
-        which_player = 1 - which_player
-
-    if pressed[pygame.K_t]:
-        for object in all_static_objects:
-            object.print()
 
     if pygame.mouse.get_pressed()[0]:
         # torej je lev prtisjen
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        # IF USERINTERFACE
-        if 658 < mouse_x < 785:
+        # IF USER INTERFACE
+        if (WIDTH - 150) < mouse_x < (WIDTH - 30):
             # pomeni, da pritiska nekje po tem UIju
             if 20 < mouse_y < 65:
                 print("Players switched")
@@ -93,18 +298,17 @@ while not done:  # main game loop
             elif 235 < mouse_y < 285:
                 print("GOLD : ")
             elif 317 < mouse_y < 373:
-                #print("ADD Soldier")
                 soldier = players[which_player].addSoldier()
                 if soldier:
-                    all_static_objects.append(soldier)
+                    all_objects_on_screen.append(soldier)
             elif 395 < mouse_y < 455:
                 archer = players[which_player].addArcher()
                 if archer:
-                    all_static_objects.append(archer)
+                    all_objects_on_screen.append(archer)
             elif 473 < mouse_y < 532:
                 tank = players[which_player].addTank()
                 if tank:
-                    all_static_objects.append(tank)
+                    all_objects_on_screen.append(tank)
             elif 555 < mouse_y < 613:
                 print("ADD Soldier4")
             elif 636 < mouse_y < 695:
@@ -115,7 +319,6 @@ while not done:  # main game loop
         lev, sredn, desn = mouse_clicks
         x1, y1 = mouse_position
 
-        # print("Prej je blo tkole: ", lev, sredn, desn)
         mouse_clicks = pygame.mouse.get_pressed()
         mouse_position = pygame.mouse.get_pos()
 
@@ -124,9 +327,8 @@ while not done:  # main game loop
         x = sorted([x1, x2])
         y = sorted([y1, y2])
 
-        if lev + desn + sredn > sum(mouse_clicks):
-
-            for object in all_static_objects:
+        if lev + desn + sredn > sum(mouse_clicks):  # Če je bil kerkol knof prtisjen
+            for object in all_objects_on_screen:
                 if x[0] < object.center_x < x[1] and y[0] < object.center_y < y[1]:
                     # To pomeni, da je objekt znotraj recttangle-a, ki ga z miško obdaja
                     if (which_player == 0 and object.player == "player1") or (
@@ -139,22 +341,27 @@ while not done:  # main game loop
                 else:
                     # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
                     if sredn:
-                        for selected_object in all_static_objects:
+                        for selected_object in all_objects_on_screen:
                             if selected_object.selected:
                                 selected_object.setDestination(mouse_position[0], mouse_position[1])
-                                selected_object.goTo(all_static_objects)
+                                selected_object.goTo(all_objects_on_screen)
                     else:
                         object.selected = 0
 
-    for selected_object in all_static_objects:
+    for selected_object in all_objects_on_screen:
         if selected_object.distance > 10:
-            selected_object.goTo(all_static_objects)
+            selected_object.goTo(all_objects_on_screen)
 
     x, y = mouse_position
 
     lev, sredn, desn = mouse_clicks
     screen.blit(background_image, [0, 0])
-    screen.blit(user_interface, [640, 0])
+    screen.blit(user_interface, [WIDTH - 160, 0])
+    screen.blit(soldr.image, [WIDTH - 100, 320])
+    screen.blit(arcr.image,  [WIDTH - 100, 400])
+    screen.blit(tenk.image,  [WIDTH - 100, 480])
+
+
     updateScreen()
 
     pygame.display.flip()
@@ -162,7 +369,6 @@ while not done:  # main game loop
 
 
 """
-import pygame 
 x = 0
 y = 0
 running = True
@@ -173,53 +379,5 @@ allRects = []
 
 screen = pygame.display.set_mode((width,height))
 
-class Shape:
-    def __init__(self,x,y,w,h):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-def graphics(deltaX,deltaY):
-    screen.fill((255,255,255))
-    for rectangle in allRects:
-        toDraw = True
-        normalX =zoom*(-(width/2)+(rectangle.x - deltaX))
-        normalY =zoom*((height/2) -(rectangle.y-deltaY))
-        topLeftX = width/2+normalX
-        topLeftY = height/2 - normalY
-        if topLeftX + rectangle.w < 0 or topLeftX>width:
-            toDraw= False
-        elif topLeftY> height or topLeftY+rectangle.h<0:
-            toDraw= False
-        else:
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(topLeftX,topLeftY,zoom*rectangle.w,zoom*rectangle.h))
 
-allRects.append(Shape(100,30,142,14))
-allRects.append(Shape(100,120,20,14))
-allRects.append(Shape(0,30,14,174))
-allRects.append(Shape(40,340,114,14))
-
-while running:
-    graphics(x,y)
-    for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-    key = pygame.key.get_pressed()
-    if key[pygame.K_UP]:
-        zoom = zoom*1.01
-    if key[pygame.K_DOWN]:
-        zoom = zoom*0.99
-    if zoom<0:
-        zoom = 0
-
-    if key[pygame.K_w]:
-        y-=1/zoom * 2
-    if key[pygame.K_s]:
-        y+=1/zoom * 2
-    if key[pygame.K_a]:
-        x-=1/zoom * 2
-    if key[pygame.K_d]:
-        x+=1/zoom * 2       
-
-    pygame.display.update()
 """

@@ -23,13 +23,18 @@ class Unit:
         self.name = name  # Kako je temu unitu bolj natančno ime
         self.screen = screen  # kam sploh rišeš
         self.image = pygame.image.load(image_path)  # prvi sprite
+        self.image = pygame.transform.scale(self.image,( 50, 50))  # prvi sprite
         self.image_selected = pygame.image.load(image_path)  # prvi sprite
 
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
+        self.level = 1
 
         self.center_x = self.x + (self.rect[2] // 2)  # Center tega unita
         self.center_y = self.y + (self.rect[3] // 2)
+
+        self.w = self.rect[2]
+        self.h = self.rect[3]
 
         self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
 
@@ -40,7 +45,8 @@ class Unit:
         self.attack = 5
         self.range = 10
         self.exp = 0
-        self.exp_worth = 0
+        self.exp_worth = 10
+        self.next_level = 15
 
         self.dead = False
         self.last_attack = time.time()
@@ -50,13 +56,24 @@ class Unit:
         print("Name: ", self.name)
         print("X : ", self.x)
         print("Y : ", self.y)
+        print("W : ", self.rect[2])
+        print("H : ", self.rect[3])
         print("R : ", self.r)
         print("hp : {} / {}".format(self.hp, self.max_hp))
+        print("exp : {} / {}".format(self.exp, self.next_level))
         print("attack : {} ".format(self.attack))
         print("dead : ", self.dead)
         print("SELECTED : ", self.selected)
         time.sleep(0.3)
         print("\n")
+
+    def scalePicture(self, scale):
+
+        self.image = pygame.transform.rotozoom(self.image, 0, scale)
+        self.rect = self.image.get_rect()
+        self.updateCenter()
+        self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
+
 
     def updateCenter(self):
         self.center_x = self.x + (self.rect[2] // 2)
@@ -143,26 +160,38 @@ class Unit:
     def setHp(self, hp):
         self.hp = hp
 
+    def getExp(self, exp):
+        self.exp += exp
+        if self.exp >= self.next_level:
+            self.next_level *= 2.5
+            self.levelUp()
+
     def fight(self, object):
 
-        if time.time() - self.last_attack > 1:
+        if time.time() - self.last_attack > self.reload_time:
             #print("enga sm užgau")
             self.hp -= object.attack
             object.hp -= self.attack
             self.last_attack = time.time()
             object.last_attack = time.time()
 
+            crash_sound = pygame.mixer.Sound("./data/punch.wav")
+            pygame.mixer.Sound.play(crash_sound)
+
+
             if self.hp <= 0:
                 self.die()
-                object.exp += self.exp_worth
+                object.getExp(self.exp_worth)
+
             if object.hp <= 0:
                 object.die()
-                self.exp += object.exp_worth
+                self.getExp(object.exp_worth)
 
     def die(self):
         self.dead = True
         print("I died in battle for Azeroth!")
-
+        crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
+        pygame.mixer.Sound.play(crash_sound)
 
 
 class Soldier(Unit):
@@ -175,11 +204,14 @@ class Soldier(Unit):
         self.attack = 10
         self.range = 15
         self.cost = 50
+        self.reload_time = 1
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
         self.attack *= 1.2
         self.hp = self.max_hp
+        self.scalePicture(1.2)
+        self.level += 1
 
 
 class Archer(Unit):
@@ -192,12 +224,15 @@ class Archer(Unit):
         self.attack = 10
         self.range = 50
         self.cost = 70
+        self.reload_time = 1.5
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
         self.attack *= 1.5
         self.hp = self.max_hp
         self.range *= 1.1
+        self.scalePicture(1.2)
+        self.level += 1
 
 
 class Tank(Unit):
@@ -205,16 +240,19 @@ class Tank(Unit):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.moveable = 1
+        self.hp = 300
         self.speed = 0.5
         self.attack = 20
         self.range = 70
         self.cost = 200
+        self.reload_time = 3
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
         self.attack *= 1.8
         self.hp = self.max_hp
-
+        self.scalePicture(1.2)
+        self.level += 1
 
 class House(Unit):
 
@@ -231,7 +269,10 @@ class Player:
         self.army = []
         self.buildings = []
         self.screen = screen
-        self.gold = 300
+        self.gold = 30000
+        self.number_of_soldiers = 0
+        self.number_of_archers  = 0
+        self.number_of_tanks    = 0
 
         self.last_soldier_added = time.time()
         self.soldier_spawn_rate = 3
@@ -249,7 +290,11 @@ class Player:
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 50
+            crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+            pygame.mixer.Sound.play(crash_sound)
+            self.number_of_soldiers += 1
             return soldier
+
         return 0
 
     def addArcher(self):
@@ -260,6 +305,9 @@ class Player:
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 70
+            crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+            pygame.mixer.Sound.play(crash_sound)
+            self.number_of_archers += 1
             return soldier
         return 0
 
@@ -271,5 +319,7 @@ class Player:
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 200
+            self.number_of_tanks += 1
             return soldier
         return 0
+
