@@ -14,9 +14,30 @@ def updateScreen():
     for object_on_screen in all_objects_on_screen:  # Gre čez vse objekte
         if object_on_screen.dead:  # Če je ta objekt "mrtu"
             all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
+
+            print(object_on_screen.name)
+
+
+            if object_on_screen.player == "player1":
+                if "Soldier" in object_on_screen.name:
+                    players[0].number_of_soldiers -= 1
+                elif "Archer" in object_on_screen.name:
+                    players[0].number_of_archers -= 1
+                elif "Tank" in object_on_screen.name:
+                    players[0].number_of_tanks -= 1
+            else:
+                if "Soldier" in object_on_screen.name:
+                    players[1].number_of_soldiers -= 1
+                elif "Archer" in object_on_screen.name:
+                    players[1].number_of_archers -= 1
+                elif "Tank" in object_on_screen.name:
+                    players[1].number_of_tanks -= 1
+
+
         else:  # Torej je objekt "živ"
             if object_on_screen.selected:  # Če ma atribut 'selected' na true
-                screen.blit(object_on_screen.image, # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                screen.blit(object_on_screen.image,
+                            # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             (object_on_screen.x, object_on_screen.y))  # Izriše en 'selected' sprite
             else:
                 screen.blit(object_on_screen.image,
@@ -24,14 +45,13 @@ def updateScreen():
 
     font = pygame.font.SysFont("comicsansms", 25)
 
-
     text = font.render("Player1", True, (245, 245, 0))
     screen.blit(text, (WIDTH - 140, 24))
 
-    text = font.render("Soldiers: "+ str(players[0].number_of_soldiers), True, (245, 245, 0))
+    text = font.render("Soldiers: " + str(players[0].number_of_soldiers), True, (245, 245, 0))
     screen.blit(text, (WIDTH - 140, 105))
 
-    text = font.render("Archers: "+ str(players[0].number_of_archers), True, (245, 245, 0))
+    text = font.render("Archers: " + str(players[0].number_of_archers), True, (245, 245, 0))
     screen.blit(text, (WIDTH - 140, 135))
 
     text = font.render("Tanks: " + str(players[0].number_of_tanks), True, (245, 245, 0))
@@ -41,13 +61,14 @@ def updateScreen():
     screen.blit(text, (WIDTH - 140, 242))
 
 
-def updateScreen1():
+def updateScreen1(deltaX, deltaY):
     for object_on_screen in all_objects_on_screen:  # Gre čez vse objekte
         if object_on_screen.dead:  # Če je ta objekt "mrtu"
             all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
         else:  # Torej je objekt "živ"
             if object_on_screen.selected:  # Če ma atribut 'selected' na true
-                screen.blit(object_on_screen.image, # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                screen.blit(object_on_screen.image,
+                            # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             (object_on_screen.x, object_on_screen.y))  # Izriše en 'selected' sprite
             else:
                 screen.blit(object_on_screen.image,
@@ -62,7 +83,8 @@ def updateScreen1():
                 elif topLeftY > height or topLeftY + object_on_screen.h < 0:
                     toDraw = False
                 else:
-                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * object_on_screen.w, zoom * object_on_screen.h))
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * object_on_screen.w,
+                                                                    zoom * object_on_screen.h))
 
 
 # ------------------------------------------------------------------------
@@ -87,10 +109,9 @@ soldier_image = pygame.image.load("./data/player1/soldier.png").convert()  # Da 
 archer_image = pygame.image.load("./data/player1/archer.png").convert()  # Da mam še UI na desni strani
 tank_image = pygame.image.load("./data/player1/tank.png").convert()  # Da mam še UI na desni strani
 
-
-soldr = units.Soldier(screen, 300,300, "./data/player1/soldier.png", "soldr", "player000")
-arcr = units.Archer(screen, 300,300, "./data/player1/archer.png", "arcer", "player000")
-tenk = units.Soldier(screen, 300,300, "./data/player1/tank.png", "tenk", "player000")
+soldr = units.Soldier(screen, 300, 300, "./data/player1/soldier.png", "soldr", "player000")
+arcr = units.Archer(screen, 300, 300, "./data/player1/archer.png", "arcer", "player000")
+tenk = units.Soldier(screen, 300, 300, "./data/player1/tank.png", "tenk", "player000")
 
 done = False
 
@@ -135,7 +156,8 @@ if False:
             elif topLeftY > height or topLeftY + rectangle.h < 0:
                 toDraw = False
             else:
-                pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
+                pygame.draw.rect(screen, (0, 0, 0),
+                                 pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
 
 
     def trololo(deltaX, deltaY):
@@ -150,10 +172,8 @@ if False:
             elif topLeftY > height or topLeftY + rectangle.h < 0:
                 toDraw = False
             else:
-                pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
-
-
-
+                pygame.draw.rect(screen, (0, 0, 0),
+                                 pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
 
 
     allRects.append(Shape(100, 30, 142, 14))
@@ -185,12 +205,13 @@ if False:
 
         pygame.display.update()
 
-# ------------------------------------------------------------------------
-# Main game loop
-# ------------------------------------------------------------------------
 selected = False
 game = ""
 settings = ""
+# ------------------------------------------------------------------------
+# Start menu
+# ------------------------------------------------------------------------
+
 while not selected:
 
     for event in pygame.event.get():
@@ -202,11 +223,6 @@ while not selected:
         # torej je lev prtisjen
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        print("\n\nX: ", mouse_x)
-        print("Y: ", mouse_y)
-
-
-        # IF USER INTERFACE
         if 285 < mouse_x < 1014:
             # pomeni, da pritiska nekje po tem UIju
             if 35 < mouse_y < 222:
@@ -218,28 +234,12 @@ while not selected:
             elif 539 < mouse_y < 725:
                 selected = True
                 done = True
-    screen.blit(start_menu,(0,-20))
+    screen.blit(start_menu, (0, -20))
     pygame.display.flip()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# ------------------------------------------------------------------------
+# Main game loop
+# ------------------------------------------------------------------------
 while not done and game:  # main game loop
 
     for event in pygame.event.get():
@@ -264,8 +264,8 @@ while not done and game:  # main game loop
         which_player = 1
 
     if pressed[pygame.K_g]:
-        #print(all_objects_on_screen[0].rect)
-        #all_objects_on_screen[0].scalePicture(1.2)
+        # print(all_objects_on_screen[0].rect)
+        # all_objects_on_screen[0].scalePicture(1.2)
 
         time.sleep(1)
 
@@ -274,8 +274,6 @@ while not done and game:  # main game loop
 
     if pressed[pygame.K_j]:
         which_player = 1
-
-
 
     if pressed[pygame.K_r]:
         print("*" * 50)
@@ -358,15 +356,13 @@ while not done and game:  # main game loop
     screen.blit(background_image, [0, 0])
     screen.blit(user_interface, [WIDTH - 160, 0])
     screen.blit(soldr.image, [WIDTH - 100, 320])
-    screen.blit(arcr.image,  [WIDTH - 100, 400])
-    screen.blit(tenk.image,  [WIDTH - 100, 480])
-
+    screen.blit(arcr.image, [WIDTH - 100, 400])
+    screen.blit(tenk.image, [WIDTH - 100, 480])
 
     updateScreen()
 
     pygame.display.flip()
     clock.tick(60)
-
 
 """
 x = 0
