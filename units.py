@@ -3,8 +3,33 @@ import os
 from math import sqrt
 import units
 from functions import *
+import functions as f
 import time
 from datetime import datetime
+import numpy as np
+
+def nafiliMrezo(all_static_objects):
+    w, h = 1300, 1300
+    mreza = [[0 for x in range(w)] for y in range(h)]
+    burek = 1
+    for i in range(w):
+        for j in range(h):
+            mreza[i][j] = 0
+
+    for objekt in all_static_objects:
+        x1 = objekt.x
+        y1 = objekt.y
+        x2 = objekt.x + objekt.w
+        y2 = objekt.y + objekt.h
+
+        for i in range(int(x1), int(x2)):
+            for j in range(int(y1), int(y2)):
+                mreza[i][j] = 1
+                burek += 1
+
+    print(burek)
+
+    return mreza
 
 class Unit:
     speed: float
@@ -98,6 +123,15 @@ class Unit:
         elif which_one == "selected":
             self.image_selected = getImage(path)
 
+
+
+
+
+
+
+
+
+
     def goTo(self, all_static_objects):
         """
         Ta funkcija premakne ta unit tja kamor je namenjen (direction_x, y)
@@ -118,23 +152,32 @@ class Unit:
                     self.fight(object)
                 # torej sem najdu v koga se zabijam
                 # torej morm pogruntat kam se morm umaknt
-                if object.x < self.x:
-                    self.x += 5
-                else:
-                    self.x -= 5
-
-                if object.y < self.y:
-                    self.y += 5
-                else:
-                    self.y -= 5
-
-                self.updateCenter()
 
             a_se_zabijam_v_koga.append(a_sm_se_zabil)
 
         if any(a_se_zabijam_v_koga):
             #print("zabiu sm se v nekoga")
             return self.distance
+
+        # KAM SPLOH MOREM IT?
+        mreza = nafiliMrezo(all_static_objects)
+
+        start = [self.x, self.y]  # starting position
+        end = [self.direction_x, self.direction_x]  # ending position
+        cost = 1  # cost per movement
+
+
+        path = f.astar(mreza, start, end)
+        print(path)
+
+
+
+
+
+
+
+
+        self.updateCenter()
 
         if self.distance < 10:
             self.moving = False
@@ -322,4 +365,6 @@ class Player:
             self.number_of_tanks += 1
             return soldier
         return 0
+
+
 

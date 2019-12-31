@@ -111,9 +111,10 @@ tank_image = pygame.image.load("./data/player1/tank.png").convert()  # Da mam š
 
 soldr = units.Soldier(screen, 300, 300, "./data/player1/soldier.png", "soldr", "player000")
 arcr = units.Archer(screen, 300, 300, "./data/player1/archer.png", "arcer", "player000")
-tenk = units.Soldier(screen, 300, 300, "./data/player1/tank.png", "tenk", "player000")
+tenk = units.Tank(screen, 300, 300, "./data/player1/tank.png", "tenk", "player000")
 
 done = False
+
 
 players = [units.Player('player1', screen), units.Player('player2', screen)]
 
