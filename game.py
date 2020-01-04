@@ -17,7 +17,6 @@ def updateScreen():
 
             print(object_on_screen.name)
 
-
             if object_on_screen.player == "player1":
                 if "Soldier" in object_on_screen.name:
                     players[0].number_of_soldiers -= 1
@@ -114,7 +113,6 @@ arcr = units.Archer(screen, 300, 300, "./data/player1/archer.png", "arcer", "pla
 tenk = units.Tank(screen, 300, 300, "./data/player1/tank.png", "tenk", "player000")
 
 done = False
-
 
 players = [units.Player('player1', screen), units.Player('player2', screen)]
 
@@ -274,7 +272,10 @@ while not done and game:  # main game loop
         all_objects_on_screen[0].hp = all_objects_on_screen[0].max_hp
 
     if pressed[pygame.K_j]:
-        which_player = 1
+        all_objects_on_screen.append(units.Soldier(screen, 400, 200, "./data/player1/tank.png", "tank", "player4"))
+        all_objects_on_screen.append(units.Soldier(screen, 400, 400, "./data/player1/tank.png", "tank1", "player4"))
+        all_objects_on_screen.append(units.Soldier(screen, 400, 600, "./data/player1/tank.png", "tank2", "player4"))
+        nafiliMrezo(all_objects_on_screen, (100, 100), (600, 600))
 
     if pressed[pygame.K_r]:
         print("*" * 50)
@@ -364,17 +365,3 @@ while not done and game:  # main game loop
 
     pygame.display.flip()
     clock.tick(60)
-
-"""
-x = 0
-y = 0
-running = True
-width = 800
-height = 600
-zoom = 1
-allRects = []
-
-screen = pygame.display.set_mode((width,height))
-
-
-"""

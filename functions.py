@@ -20,6 +20,7 @@ def collisionDetection(object1, object2):
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
 
+
 def getImage(path):
     global _image_library
     image = _image_library.get(path)
@@ -29,20 +30,137 @@ def getImage(path):
         _image_library[path] = image
     return image
 
+
+def nafiliMrezo(all_static_objects, start, end):
+
+    print("nafiliMrezo()")
+    print(start)
+    print(end)
+
+
+
+    w, h = 1300, 1300
+    start_found = 0
+    mreza = [[0 for x in range(w)] for y in range(h)]
+    burek = 1
+    for i in range(h):
+        for j in range(w):
+            mreza[i][j] = 4
+    """
+             3. vrstica
+            10. stolpec
+        mreza[3][10] = 122
+        for i in range(h):
+            for j in range(w):
+                print(mreza[i][j], end = "")
+            print("\n") 
+            
+            
+        LEGENDA :     
+        
+        4  == path
+        
+        -1 == zid
+        -3 == start
+        -2 == end
+        
+            
+            
+                 
+    """
+
+    for objekt in all_static_objects:
+        x1 = objekt.x
+        y1 = objekt.y
+        x2 = objekt.x + objekt.w
+        y2 = objekt.y + objekt.h
+
+        for i in range(int(y1), int(y2)):
+            for j in range(int(x1), int(x2)):
+                if objekt.selected == 0:
+                    mreza[i][j] = -1
+
+        print("Sem dodal objekt : " + objekt.name)
+
+    print(start)
+    print(end)
+
+
+    for i in range(int(end[1])-10, int(end[1]) + 10):
+        for j in range(int(end[0])-10, int(end[0]) + 10):
+            mreza[i][j] = -2
+
+    for i in range(int(start[1])-10, int(start[1]) + 10):
+        for j in range(int(start[0])-10, int(start[0]) + 10):
+            mreza[i][j] = -3
+
+
+    file = open("lab.txt", "w")
+
+    zacetek = "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+
+    file.write(zacetek + "\n")
+
+    vrstica = "-1,"
+
+    offset = 15
+
+    for i in range(0, h, 20):
+        for j in range(0, w, 20):
+            vrstica = vrstica + str(mreza[i][j]) + ","
+        file.write(vrstica + "-1\n")
+        vrstica = "-1,"
+
+    file.write(zacetek + "\n")
+
+    file.close()
+
+    print("JEMEBU MATER; DA SM NAREDU TXT FILE")
+    return mreza
+
+
 class Node:
     """A node class for A* Pathfinding"""
 
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.position = position
+    def __init__(self, x, y, right=None, down=None, left=None, up=None):
 
-        self.g = 0
-        self.h = 0
-        self.f = 0
+        self.x = x
+        self.y = y
+        self.position = (x, y)
+        self.value = -1
+
+        self.desno = right
+        self.dol = down
+        self.levo = left
+        self.gor = up
+
+        self.st_sosedov = 0
+
+        self.sosedi = []
+
+        self.visited = 0
+        self.previous = None
 
     def __eq__(self, other):
         return self.position == other.position
 
+    def nafilajSosede(self):
+        if dol is not None:
+            self.st_sosedov += 1
+            self.sosedi.append(dol)
+        if levo is not None:
+            self.st_sosedov += 1
+            self.sosedi.append(levo)
+        if desno is not None:
+            self.st_sosedov += 1
+            self.sosedi.append(desno)
+        if gor is not None:
+            self.st_sosedov += 1
+            self.sosedi.append(gor)
+
+
+class Labirint:
+    pass
 
 
 def astar(maze, start, end):
@@ -83,17 +201,18 @@ def astar(maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1] # Return reversed path
+            return path[::-1]  # Return reversed path
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
 
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
+                    len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
                 continue
 
             # Make sure walkable terrain
@@ -116,7 +235,8 @@ def astar(maze, start, end):
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
+                    (child.position[1] - end_node.position[1]) ** 2)
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -126,4 +246,3 @@ def astar(maze, start, end):
 
             # Add the child to the open list
             open_list.append(child)
-

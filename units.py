@@ -7,29 +7,8 @@ import functions as f
 import time
 from datetime import datetime
 import numpy as np
+from Astar import *
 
-def nafiliMrezo(all_static_objects):
-    w, h = 1300, 1300
-    mreza = [[0 for x in range(w)] for y in range(h)]
-    burek = 1
-    for i in range(w):
-        for j in range(h):
-            mreza[i][j] = 0
-
-    for objekt in all_static_objects:
-        x1 = objekt.x
-        y1 = objekt.y
-        x2 = objekt.x + objekt.w
-        y2 = objekt.y + objekt.h
-
-        for i in range(int(x1), int(x2)):
-            for j in range(int(y1), int(y2)):
-                mreza[i][j] = 1
-                burek += 1
-
-    print(burek)
-
-    return mreza
 
 class Unit:
     speed: float
@@ -48,7 +27,7 @@ class Unit:
         self.name = name  # Kako je temu unitu bolj natančno ime
         self.screen = screen  # kam sploh rišeš
         self.image = pygame.image.load(image_path)  # prvi sprite
-        self.image = pygame.transform.scale(self.image,( 50, 50))  # prvi sprite
+        self.image = pygame.transform.scale(self.image, (50, 50))  # prvi sprite
         self.image_selected = pygame.image.load(image_path)  # prvi sprite
 
         self.rect = self.image.get_rect()
@@ -99,7 +78,6 @@ class Unit:
         self.updateCenter()
         self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
 
-
     def updateCenter(self):
         self.center_x = self.x + (self.rect[2] // 2)
         self.center_y = self.y + (self.rect[3] // 2)
@@ -122,15 +100,6 @@ class Unit:
             self.image = getImage(path)
         elif which_one == "selected":
             self.image_selected = getImage(path)
-
-
-
-
-
-
-
-
-
 
     def goTo(self, all_static_objects):
         """
@@ -156,26 +125,21 @@ class Unit:
             a_se_zabijam_v_koga.append(a_sm_se_zabil)
 
         if any(a_se_zabijam_v_koga):
-            #print("zabiu sm se v nekoga")
+            # print("zabiu sm se v nekoga")
             return self.distance
 
-        # KAM SPLOH MOREM IT?
-        mreza = nafiliMrezo(all_static_objects)
+        print("evo, sem v GOTOOOOO")
 
-        start = [self.x, self.y]  # starting position
-        end = [self.direction_x, self.direction_x]  # ending position
-        cost = 1  # cost per movement
+        # Tukej dejansko naredim .txt file, da ga lahko pol uporabim
+        mreza = nafiliMrezo(all_static_objects,
+                            (300, 300),
+                            (850, 850))
 
-
-        path = f.astar(mreza, start, end)
+        # tukej bi ga pa jz uporabu
+        path = astar_main()
         print(path)
 
-
-
-
-
-
-
+        print("KUUUUUUUUUUUUUUUURACS")
 
         self.updateCenter()
 
@@ -212,7 +176,7 @@ class Unit:
     def fight(self, object):
 
         if time.time() - self.last_attack > self.reload_time:
-            #print("enga sm užgau")
+            # print("enga sm užgau")
             self.hp -= object.attack
             object.hp -= self.attack
             self.last_attack = time.time()
@@ -220,7 +184,6 @@ class Unit:
 
             crash_sound = pygame.mixer.Sound("./data/punch.wav")
             pygame.mixer.Sound.play(crash_sound)
-
 
             if self.hp <= 0:
                 self.die()
@@ -297,6 +260,7 @@ class Tank(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
+
 class House(Unit):
 
     def __init__(self, screen, x, y, image_path, name, player):
@@ -314,8 +278,8 @@ class Player:
         self.screen = screen
         self.gold = 30000
         self.number_of_soldiers = 0
-        self.number_of_archers  = 0
-        self.number_of_tanks    = 0
+        self.number_of_archers = 0
+        self.number_of_tanks = 0
 
         self.last_soldier_added = time.time()
         self.soldier_spawn_rate = 3
@@ -329,7 +293,8 @@ class Player:
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
             soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/soldier.png', 'Soldier' + str(len(self.army)), self.player)
+                              './data/' + str(self.player) + '/soldier.png', 'Soldier' + str(len(self.army)),
+                              self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 50
@@ -343,8 +308,8 @@ class Player:
     def addArcher(self):
         if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0:
             soldier = Archer(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/archer.png', 'Archer' + str(len(self.army)),
-                              self.player)
+                             './data/' + str(self.player) + '/archer.png', 'Archer' + str(len(self.army)),
+                             self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 70
@@ -357,14 +322,11 @@ class Player:
     def addTank(self):
         if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0:
             soldier = Tank(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/tank.png', 'Tank' + str(len(self.army)),
-                              self.player)
+                           './data/' + str(self.player) + '/tank.png', 'Tank' + str(len(self.army)),
+                           self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 200
             self.number_of_tanks += 1
             return soldier
         return 0
-
-
-
