@@ -9,6 +9,8 @@ from datetime import datetime
 import numpy as np
 from Astar import *
 
+import os
+
 
 class Unit:
     speed: float
@@ -55,6 +57,9 @@ class Unit:
         self.dead = False
         self.last_attack = time.time()
 
+        self.next_moves = []
+        self.move_times = 0
+
     def print(self):
         print("Player: ", self.player)
         print("Name: ", self.name)
@@ -68,11 +73,11 @@ class Unit:
         print("attack : {} ".format(self.attack))
         print("dead : ", self.dead)
         print("SELECTED : ", self.selected)
+        print("move_times : ", self.move_times)
         time.sleep(0.3)
         print("\n")
 
     def scalePicture(self, scale):
-
         self.image = pygame.transform.rotozoom(self.image, 0, scale)
         self.rect = self.image.get_rect()
         self.updateCenter()
@@ -81,6 +86,8 @@ class Unit:
     def updateCenter(self):
         self.center_x = self.x + (self.rect[2] // 2)
         self.center_y = self.y + (self.rect[3] // 2)
+        self.w = self.rect[2]
+        self.h = self.rect[3]
 
     def move(self, direction):
 
@@ -107,60 +114,58 @@ class Unit:
         :return: razdaljo od cilja
         """
 
-        self.moving = True
-        self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
+        #print("\n\n GOTO \n\n")
 
-        a_se_zabijam_v_koga = []
+        if not self.next_moves:
+            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
+            a_se_zabijam_v_koga = []
+            for object in all_static_objects:
+                a_sm_se_zabil = collisionDetection(self, object)
+                if a_sm_se_zabil:
+                    if self.player != object.player:
+                        # pomen, da sm se zabil v nasprotnika
+                        self.fight(object)
+                    # torej sem najdu v koga se zabijam
+                    # torej morm pogruntat kam se morm umaknt
 
-        for object in all_static_objects:
+                a_se_zabijam_v_koga.append(a_sm_se_zabil)
 
-            a_sm_se_zabil = collisionDetection(self, object)
-            if a_sm_se_zabil:
-                if self.player != object.player:
-                    # pomen, da sm se zabil v nasprotnika
-                    self.fight(object)
-                # torej sem najdu v koga se zabijam
-                # torej morm pogruntat kam se morm umaknt
+            if any(a_se_zabijam_v_koga):
+                # print("zabiu sm se v nekoga")
+                return self.distance
 
-            a_se_zabijam_v_koga.append(a_sm_se_zabil)
+            if self.distance < 10:
+                self.moving = False
+                return self.distance
 
-        if any(a_se_zabijam_v_koga):
-            # print("zabiu sm se v nekoga")
-            return self.distance
-
-        print("evo, sem v GOTOOOOO")
-
-        # Tukej dejansko naredim .txt file, da ga lahko pol uporabim
-        mreza = nafiliMrezo(all_static_objects,
-                            (300, 300),
-                            (850, 850))
-
-        # tukej bi ga pa jz uporabu
-        path = astar_main()
-        print(path)
-
-        print("KUUUUUUUUUUUUUUUURACS")
-
-        self.updateCenter()
-
-        if self.distance < 10:
-            self.moving = False
-            return self.distance
-
-        if self.center_x < self.direction_x:
-            self.move("right")
+            if self.moving:
+                self.move_times -= 1
+                if self.move_times >= 0:
+                    #self.print()
+                    nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
+                    os.system('powershell.exe python a_star.py')
+                    self.fromCoordinatesGetDirections()
+                else:
+                    return self.distance
+            else:
+                return self.distance
         else:
-            self.move("left")
 
-        if self.center_y > self.direction_y:
-            self.move("up")
-        else:
-            self.move("down")
-
-        self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
-        return self.distance
+            #print(self.next_moves)
+            if len(self.next_moves) < 3:
+                return self.distance
+            kam = self.next_moves[0]
+            self.speed = 19
+            time.sleep(0.05)
+            self.move(kam)
+            self.next_moves = self.next_moves[1:]
+            self.updateCenter()
+            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
+            return self.distance
 
     def setDestination(self, dest_x, dest_y):
+
+        self.move_times = 1
         self.direction_x = dest_x
         self.direction_y = dest_y
 
@@ -198,6 +203,33 @@ class Unit:
         print("I died in battle for Azeroth!")
         crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
         pygame.mixer.Sound.play(crash_sound)
+
+    def fromCoordinatesGetDirections(self):
+
+        file = open("path.txt", "r")
+        coordinates = file.readline()
+
+        coordinates = coordinates[2:-2].split("), (")
+        #print("\n\n\n")
+        #print(coordinates)
+
+        for terka1, terka2 in zip(coordinates, coordinates[1:]):
+            x1, y1 = terka1.split(", ")
+            x2, y2 = terka2.split(", ")
+
+            if x1 == x2:
+                if y1 < y2:
+                    self.next_moves.append("right")
+                else:
+                    self.next_moves.append("left")
+            else:
+                if x1 < x2:
+                    self.next_moves.append("down")
+                else:
+                    self.next_moves.append("up")
+
+        #print(self.next_moves)
+        #print("\n\n\n")
 
 
 class Soldier(Unit):

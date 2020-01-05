@@ -266,16 +266,26 @@ while not done and game:  # main game loop
         # print(all_objects_on_screen[0].rect)
         # all_objects_on_screen[0].scalePicture(1.2)
 
-        time.sleep(1)
+        time.sleep(5)
 
     if pressed[pygame.K_h]:
         all_objects_on_screen[0].hp = all_objects_on_screen[0].max_hp
 
     if pressed[pygame.K_j]:
-        all_objects_on_screen.append(units.Soldier(screen, 400, 200, "./data/player1/tank.png", "tank", "player4"))
-        all_objects_on_screen.append(units.Soldier(screen, 400, 400, "./data/player1/tank.png", "tank1", "player4"))
-        all_objects_on_screen.append(units.Soldier(screen, 400, 600, "./data/player1/tank.png", "tank2", "player4"))
-        nafiliMrezo(all_objects_on_screen, (100, 100), (600, 600))
+        a = units.Soldier(screen, 400, 100, "./data/house.png", "bajta1", "player4")
+        a.scalePicture(3)
+        all_objects_on_screen.append(a)
+
+        b = units.Soldier(screen, 400, 300, "./data/house.png", "bajta2", "player4")
+        b.scalePicture(3)
+        all_objects_on_screen.append(b)
+
+        c = units.Soldier(screen, 400, 500, "./data/house.png", "bajta3", "player4")
+        c.scalePicture(3)
+        all_objects_on_screen.append(c)
+
+        time.sleep(0.5)
+        #nafiliMrezo(all_objects_on_screen, (100, 100), (600, 600))
 
     if pressed[pygame.K_r]:
         print("*" * 50)
@@ -335,8 +345,10 @@ while not done and game:  # main game loop
                             which_player == 1 and object.player == "player2"):
                         # Če hoče taprav player premikat taprave unite
                         object.selected = 1
+                        object.move_times = 1
                     else:
                         object.selected = 0
+                        object.move_times = 0
 
                 else:
                     # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
@@ -347,6 +359,7 @@ while not done and game:  # main game loop
                                 selected_object.goTo(all_objects_on_screen)
                     else:
                         object.selected = 0
+                        object.move_times = 0
 
     for selected_object in all_objects_on_screen:
         if selected_object.distance > 10:

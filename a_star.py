@@ -246,6 +246,8 @@ def calc_price(path):
 
 
 
+import sys
+
 narray = np.loadtxt("lab.txt", int, delimiter=",")
 start = np.argwhere(narray == -2)
 start = list(map(list, start))[0]
@@ -253,54 +255,32 @@ end = np.argwhere(narray == -3)
 end = list(map(list,end))
 
 recalc = find_path_recalc(end)
-print("path found when recalculating has price: {}".format(calc_price(recalc)))
+#print("path found when recalculating has price: {}".format(calc_price(recalc)))
 
 
 ends = list()
 start = np.argwhere(narray == -2)
 start = list(map(list, start))[0]
-print("\n\nprices of static findings: ")
+#print("\n\nprices of static findings: ")
 minEnd = None
 minPrice = 0
 for e in end:
-    tmp = find_path_static(tuple(e))
-    price = calc_price(tmp)
-    if(not(minEnd)):
-        minEnd = tmp.copy()
-        minPrice = price
-    else:
-        if price < minPrice:
-            minPrice = price
-            minEnd = tmp.copy()
+	tmp = find_path_static(tuple(e))
+	price = calc_price(tmp)
+	if(not(minEnd)):
+		minEnd = tmp.copy()
+		minPrice = price
+	else:
+		if price < minPrice:
+			minPrice = price
+			minEnd = tmp.copy()
 
-    ends.append(tmp)
+	ends.append(tmp)
 
-    print(price)
-"""
-print("\n\nprices of static findings without checking if been on same field: ")
-minEnd = None
-minPrice = 0
-for e in end:
-    tmp = find_path_static_backtrace(tuple(e))
-    price = calc_price(tmp)
-    if (not (minEnd)):
-        minEnd = tmp.copy()
-        minPrice = price
-    else:
-        if price < minPrice:
-            minPrice = price
-            minEnd = tmp.copy()
-
-    ends.append(tmp)
-
-    print(price)
-"""
-dm = draw_manager.DrawManager(narray)
-
-dm.draw_lab()
-
-dm.draw_end_path(minEnd)
-
-dm.call_sys_exit()
+file = open("path.txt", "w")
+file.write(str(minEnd));
+file.close();
 
 
+print(minEnd)
+sys.exit(0)

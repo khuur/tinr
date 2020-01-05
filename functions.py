@@ -37,15 +37,9 @@ def nafiliMrezo(all_static_objects, start, end):
     print(start)
     print(end)
 
+    w, h = 1300, 800
+    mreza = [[4 for x in range(w)] for y in range(h)]
 
-
-    w, h = 1300, 1300
-    start_found = 0
-    mreza = [[0 for x in range(w)] for y in range(h)]
-    burek = 1
-    for i in range(h):
-        for j in range(w):
-            mreza[i][j] = 4
     """
              3. vrstica
             10. stolpec
@@ -58,14 +52,12 @@ def nafiliMrezo(all_static_objects, start, end):
             
         LEGENDA :     
         
-        4  == path
+         4 == path
         
         -1 == zid
-        -3 == start
         -2 == end
-        
-            
-            
+        -3 == start
+         
                  
     """
 
@@ -80,10 +72,10 @@ def nafiliMrezo(all_static_objects, start, end):
                 if objekt.selected == 0:
                     mreza[i][j] = -1
 
-        print("Sem dodal objekt : " + objekt.name)
+        #print("Sem dodal objekt : " + objekt.name)
 
-    print(start)
-    print(end)
+    #print(start)
+    #print(end)
 
 
     for i in range(int(end[1])-10, int(end[1]) + 10):
@@ -101,21 +93,15 @@ def nafiliMrezo(all_static_objects, start, end):
 
     file.write(zacetek + "\n")
 
-    vrstica = "-1,"
-
-    offset = 15
-
     for i in range(0, h, 20):
+        vrstica = "-1,"
         for j in range(0, w, 20):
             vrstica = vrstica + str(mreza[i][j]) + ","
         file.write(vrstica + "-1\n")
-        vrstica = "-1,"
 
     file.write(zacetek + "\n")
-
     file.close()
 
-    print("JEMEBU MATER; DA SM NAREDU TXT FILE")
     return mreza
 
 
