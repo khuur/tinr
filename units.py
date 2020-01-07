@@ -59,6 +59,7 @@ class Unit:
 
         self.next_moves = []
         self.move_times = 0
+        self.sound_enabled = 0
 
     def print(self):
         print("Player: ", self.player)
@@ -151,11 +152,10 @@ class Unit:
                 return self.distance
         else:
 
-            #print(self.next_moves)
             if len(self.next_moves) < 3:
                 return self.distance
             kam = self.next_moves[0]
-            self.speed = 19
+            self.speed = 10
             time.sleep(0.05)
             self.move(kam)
             self.next_moves = self.next_moves[1:]
@@ -186,9 +186,9 @@ class Unit:
             object.hp -= self.attack
             self.last_attack = time.time()
             object.last_attack = time.time()
-
-            crash_sound = pygame.mixer.Sound("./data/punch.wav")
-            pygame.mixer.Sound.play(crash_sound)
+            if self.sound_enabled:
+                crash_sound = pygame.mixer.Sound("./data/punch.wav")
+                pygame.mixer.Sound.play(crash_sound)
 
             if self.hp <= 0:
                 self.die()
@@ -201,8 +201,9 @@ class Unit:
     def die(self):
         self.dead = True
         print("I died in battle for Azeroth!")
-        crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
-        pygame.mixer.Sound.play(crash_sound)
+        if self.sound_enabled:
+            crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
+            pygame.mixer.Sound.play(crash_sound)
 
     def fromCoordinatesGetDirections(self):
 
@@ -323,17 +324,19 @@ class Player:
         self.tank_spawn_rate = 5
 
         self.experience = 0
+        self.sound_enabled = 1
 
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
-            soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
+            soldier = Soldier(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                               './data/' + str(self.player) + '/soldier.png', 'Soldier' + str(len(self.army)),
                               self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 50
             crash_sound = pygame.mixer.Sound("./data/whiff.wav")
-            pygame.mixer.Sound.play(crash_sound)
+            if self.sound_enabled:
+                pygame.mixer.Sound.play(crash_sound)
             self.number_of_soldiers += 1
             return soldier
 
@@ -341,21 +344,22 @@ class Player:
 
     def addArcher(self):
         if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0:
-            soldier = Archer(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
+            soldier = Archer(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                              './data/' + str(self.player) + '/archer.png', 'Archer' + str(len(self.army)),
                              self.player)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 70
-            crash_sound = pygame.mixer.Sound("./data/whiff.wav")
-            pygame.mixer.Sound.play(crash_sound)
+            if self.sound_enabled:
+                crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+                pygame.mixer.Sound.play(crash_sound)
             self.number_of_archers += 1
             return soldier
         return 0
 
     def addTank(self):
         if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0:
-            soldier = Tank(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
+            soldier = Tank(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                            './data/' + str(self.player) + '/tank.png', 'Tank' + str(len(self.army)),
                            self.player)
             self.army.append(soldier)
@@ -364,3 +368,9 @@ class Player:
             self.number_of_tanks += 1
             return soldier
         return 0
+
+
+    def changeSoundSettings(self, sound_enabled):
+        self.sound_enabled = sound_enabled
+        for x in self.army:
+            x.sound_enabled = sound_enabled

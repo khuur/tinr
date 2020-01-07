@@ -32,107 +32,90 @@ def getImage(path):
 
 
 def nafiliMrezo(all_static_objects, start, end):
-    print("nafiliMrezo()")
-    print(start)
-    print(end)
-
     w, h = 1300, 800
-    mreza = [[4 for x in range(w)] for y in range(h)]
+    # Mreza bo velikosti 130 x 80
+    mreza = [[4 for x in range(0, w // 10)] for y in range(0, h // 10)]
 
     """
              3. vrstica
             10. stolpec
         mreza[3][10] = 122
-        for i in range(h):
-            for j in range(w):
-                print(mreza[i][j], end = "")
-            print("\n") 
-            
-            
         LEGENDA :     
-        
          4 == path
         
         -1 == zid
         -2 == end
-        -3 == start
-         
-                 
+        -3 == startwher                
     """
 
     for objekt in all_static_objects:
-        x1 = objekt.x
-        y1 = objekt.y
-        x2 = objekt.x + objekt.w
-        y2 = objekt.y + objekt.h
+        x1 = int(objekt.x) // 10  # Da dobim iz 523 => 52
+        y1 = int(objekt.y) // 10
+        x2 = int(objekt.x + objekt.w) // 10
+        y2 = int(objekt.y + objekt.h) // 10
 
-        for i in range(int(y1), int(y2)):
-            for j in range(int(x1), int(x2)):
-                if objekt.selected == 0:
+        for i in range(y1, y2):
+            for j in range(x1, x2):
+                if not objekt.selected: # Da ne jebe samga sebe
                     mreza[i][j] = -1
 
-        # print("Sem dodal objekt : " + objekt.name)
+    start_x = start[0] // 10
+    start_y = start[1] // 10
+    end_x = end[0] // 10
+    end_y = end[1] // 10
 
-    # print(start)
-    # print(end)
-
-    for i in range(int(end[1]) - 10, int(end[1]) + 10):
-        for j in range(int(end[0]) - 10, int(end[0]) + 10):
-            mreza[i][j] = -2
-
-    for i in range(int(start[1]) - 10, int(start[1]) + 10):
-        for j in range(int(start[0]) - 10, int(start[0]) + 10):
-            mreza[i][j] = -3
+    # Tole je pomoje narobe, ampak na tak način dela, tko da bom pustu tko kt je
+    mreza[end_y][end_x] = -2
+    mreza[start_y][start_x] = -3
 
     file = open("lab.txt", "w")
 
-    zacetek = "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+    zacetek = "-1," * (w // 10 + 2)
 
-    file.write(zacetek + "\n")
+    file.write(zacetek[:-1] + "\n")
 
-    for i in range(0, h, 20):
+    for i in range(0, h // 10):
         vrstica = "-1,"
-        for j in range(0, w, 20):
+        for j in range(0, w // 10):
             vrstica = vrstica + str(mreza[i][j]) + ","
         file.write(vrstica + "-1\n")
 
-    file.write(zacetek + "\n")
+    file.write(zacetek[:-1] + "\n")
     file.close()
 
     return mreza
 
 
 def bestHighscores():
+    """
+    This function returns best 3 highscores
+    :return: ['1. Krisjan - 320', '2. Janez - 120', '3. Miha - 110']
+    """
     file = open("highscore.txt", "r")
 
     return_best = []
-
     highscores = []
-
     for line in file:
-        ime, score = line.split("%%")
-        picka = (score, ime)
-        highscores.append(picka)
-
+        ime, score = line.split("%%")  # Prebere vsako vrstico v file-u
+        terka = (score, ime)  # In ju zapiše v terko
+        highscores.append(terka)  # Ki ju nato appenda v seznam
     file.close()
+    highscores = sorted(highscores, reverse=True)  # Da ga lahko na tej točki sortam
 
-    highscores = sorted(highscores, reverse=True)
-
-    for i in range(3):
-        score, name = highscores[i]
-        return_best.append("{0}. {1} - {2}".format(str(i + 1), str(name), str(score)))
-
+    for i in range(3):  # best 3 highscores
+        score, name = highscores[i]  # unpack from (320, 'Kristjan')
+        return_best.append(
+            "{0}. {1} - {2}".format(str(i + 1), str(name), str(score)))  # and append as '1. Krisjan - 320'
     return return_best
 
 
 def highscoreToTxt(players):
-    file = open("highscore.txt", "a")
+    file = open("highscore.txt", "a")  # a stands for append
 
     for player in players:
         tocke = 0
         for unit in player.army:
-            tocke += unit.experience
+            tocke += unit.exp
 
         file.write(str(player.player) + "%%" + str(tocke) + "\n")
-
     file.close()
