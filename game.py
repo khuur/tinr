@@ -103,7 +103,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))  # Kam bom sploh risu stvari
 pygame.display.set_caption("Kris's game")  # Da mam svoj caption :3
 background_image = pygame.image.load("./data/blurred_map.jpg").convert()  # Kar je v ozadju narisano
 user_interface = pygame.image.load("./data/user_interface1.png").convert()  # Da mam še UI na desni strani
-start_menu = pygame.image.load("./data/start_menu.png").convert()  # Da mam še UI na desni strani
+start_menu = pygame.image.load("./data/start_menu3.png").convert()  # Da mam še UI na desni strani
+highscore_menu = pygame.image.load("./data/highscore_menu.png").convert()  # Da mam še UI na desni strani
 soldier_image = pygame.image.load("./data/player1/soldier.png").convert()  # Da mam še UI na desni strani
 archer_image = pygame.image.load("./data/player1/archer.png").convert()  # Da mam še UI na desni strani
 tank_image = pygame.image.load("./data/player1/tank.png").convert()  # Da mam še UI na desni strani
@@ -206,6 +207,7 @@ if False:
 
 selected = False
 game = ""
+highscore = ""
 settings = ""
 # ------------------------------------------------------------------------
 # Start menu
@@ -224,13 +226,17 @@ while not selected:
 
         if 285 < mouse_x < 1014:
             # pomeni, da pritiska nekje po tem UIju
-            if 35 < mouse_y < 222:
+            if 35 < mouse_y < 190:
                 selected = True
                 game = True
-            elif 294 < mouse_y < 475:
+            elif 240 < mouse_y < 390:
+                selected = True
+                highscore = True
+                game = True
+            elif 410 < mouse_y < 560:
                 selected = True
                 settings = True
-            elif 539 < mouse_y < 725:
+            elif 580 < mouse_y < 725:
                 selected = True
                 done = True
     screen.blit(start_menu, (0, -20))
@@ -239,13 +245,43 @@ while not selected:
 # ------------------------------------------------------------------------
 # Main game loop
 # ------------------------------------------------------------------------
+print("burek")
+font = pygame.font.SysFont("comicsansms", 25)
+
 while not done and game:  # main game loop
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
             done = True  # Če je, pol zaključi z igro
+            highscoreToTxt(players)
 
     pressed = pygame.key.get_pressed()
+
+    if highscore:
+
+        screen.blit(highscore_menu, (0, -20))
+        #print("ti")
+        highscores = bestHighscores()
+        #print(highscores)
+        for i, hs in enumerate(highscores):
+            text = font.render(hs.strip(), True, (220, 20, 60))
+            screen.blit(text, (500, 242 + i * 50))
+        pygame.display.flip()
+        time.sleep(0.2)
+
+
+
+        if pygame.mouse.get_pressed()[0]:
+            # torej je lev prtisjen
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if 285 < mouse_x < 1014:
+                # pomeni, da pritiska nekje po tem UIju
+                if 580 < mouse_y < 725:
+                    selected = True
+                    highscore = False
+        #pygame.display.flip()
+        if highscore:
+            continue
 
     if pressed[pygame.K_UP]:
         players[which_player].army[0].move("up")

@@ -32,7 +32,6 @@ def getImage(path):
 
 
 def nafiliMrezo(all_static_objects, start, end):
-
     print("nafiliMrezo()")
     print(start)
     print(end)
@@ -72,20 +71,18 @@ def nafiliMrezo(all_static_objects, start, end):
                 if objekt.selected == 0:
                     mreza[i][j] = -1
 
-        #print("Sem dodal objekt : " + objekt.name)
+        # print("Sem dodal objekt : " + objekt.name)
 
-    #print(start)
-    #print(end)
+    # print(start)
+    # print(end)
 
-
-    for i in range(int(end[1])-10, int(end[1]) + 10):
-        for j in range(int(end[0])-10, int(end[0]) + 10):
+    for i in range(int(end[1]) - 10, int(end[1]) + 10):
+        for j in range(int(end[0]) - 10, int(end[0]) + 10):
             mreza[i][j] = -2
 
-    for i in range(int(start[1])-10, int(start[1]) + 10):
-        for j in range(int(start[0])-10, int(start[0]) + 10):
+    for i in range(int(start[1]) - 10, int(start[1]) + 10):
+        for j in range(int(start[0]) - 10, int(start[0]) + 10):
             mreza[i][j] = -3
-
 
     file = open("lab.txt", "w")
 
@@ -105,130 +102,37 @@ def nafiliMrezo(all_static_objects, start, end):
     return mreza
 
 
-class Node:
-    """A node class for A* Pathfinding"""
+def bestHighscores():
+    file = open("highscore.txt", "r")
 
-    def __init__(self, x, y, right=None, down=None, left=None, up=None):
+    return_best = []
 
-        self.x = x
-        self.y = y
-        self.position = (x, y)
-        self.value = -1
+    highscores = []
 
-        self.desno = right
-        self.dol = down
-        self.levo = left
-        self.gor = up
+    for line in file:
+        ime, score = line.split("%%")
+        picka = (score, ime)
+        highscores.append(picka)
 
-        self.st_sosedov = 0
+    file.close()
 
-        self.sosedi = []
+    highscores = sorted(highscores, reverse=True)
 
-        self.visited = 0
-        self.previous = None
+    for i in range(3):
+        score, name = highscores[i]
+        return_best.append("{0}. {1} - {2}".format(str(i + 1), str(name), str(score)))
 
-    def __eq__(self, other):
-        return self.position == other.position
-
-    def nafilajSosede(self):
-        if dol is not None:
-            self.st_sosedov += 1
-            self.sosedi.append(dol)
-        if levo is not None:
-            self.st_sosedov += 1
-            self.sosedi.append(levo)
-        if desno is not None:
-            self.st_sosedov += 1
-            self.sosedi.append(desno)
-        if gor is not None:
-            self.st_sosedov += 1
-            self.sosedi.append(gor)
+    return return_best
 
 
-class Labirint:
-    pass
+def highscoreToTxt(players):
+    file = open("highscore.txt", "a")
 
+    for player in players:
+        tocke = 0
+        for unit in player.army:
+            tocke += unit.experience
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+        file.write(str(player.player) + "%%" + str(tocke) + "\n")
 
-    # Create start and end node
-    start_node = Node(None, start)
-    start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
-
-    # Initialize both open and closed list
-    open_list = []
-    closed_list = []
-
-    # Add the start node
-    open_list.append(start_node)
-
-    # Loop until you find the end
-    while len(open_list) > 0:
-
-        # Get the current node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
-
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
-
-        # Found the goal
-        if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1]  # Return reversed path
-
-        # Generate children
-        children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
-
-            # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
-
-            # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
-                    len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
-                continue
-
-            # Make sure walkable terrain
-            if maze[node_position[0]][node_position[1]] != 0:
-                continue
-
-            # Create new node
-            new_node = Node(current_node, node_position)
-
-            # Append
-            children.append(new_node)
-
-        # Loop through children
-        for child in children:
-
-            # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
-
-            # Create the f, g, and h values
-            child.g = current_node.g + 1
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
-                    (child.position[1] - end_node.position[1]) ** 2)
-            child.f = child.g + child.h
-
-            # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
-
-            # Add the child to the open list
-            open_list.append(child)
+    file.close()

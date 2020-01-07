@@ -322,6 +322,8 @@ class Player:
         self.last_tank_added = time.time()
         self.tank_spawn_rate = 5
 
+        self.experience = 0
+
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
             soldier = Soldier(self.screen, 300 + len(self.army) * 30, 300 + len(self.army) * 30,
