@@ -5,17 +5,19 @@ import units
 from functions import *
 import time
 
+points = {}
+
 
 def euclideanDistance(object1, object2):
     return sqrt((object2.x - object1.x) ** 2 + (object2.y - object1.y) ** 2)
 
 
 def collisionDetection(object1, object2):
-    if (str(object1.player) + str(object1.name)) == (str(object2.player) + str(object2.name)):
+    if (str(object1.player)) == (str(object2.player)):
         return False
 
     sum_r = object1.r + object2.r  # Sum of both radius
-    distance = euclideanDistance(object1, object2)  # Actual distance between objects
+    distance = euclideanDistance(object1, object2)   # Actual distance between objects
 
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
@@ -56,7 +58,7 @@ def nafiliMrezo(all_static_objects, start, end):
 
         for i in range(y1, y2):
             for j in range(x1, x2):
-                if not objekt.selected: # Da ne jebe samga sebe
+                if not objekt.selected and objekt.moveable == 0:  # Da ne jebe samga sebe
                     mreza[i][j] = -1
 
     start_x = start[0] // 10
@@ -97,11 +99,12 @@ def bestHighscores():
     highscores = []
     for line in file:
         ime, score = line.split("%%")  # Prebere vsako vrstico v file-u
+        score = int(score)
         terka = (score, ime)  # In ju zapiše v terko
         highscores.append(terka)  # Ki ju nato appenda v seznam
     file.close()
     highscores = sorted(highscores, reverse=True)  # Da ga lahko na tej točki sortam
-
+    print(highscores)
     for i in range(3):  # best 3 highscores
         score, name = highscores[i]  # unpack from (320, 'Kristjan')
         return_best.append(
@@ -115,7 +118,17 @@ def highscoreToTxt(players):
     for player in players:
         tocke = 0
         for unit in player.army:
-            tocke += unit.exp
+            tocke += unit.exp * 100
 
+        #tocke += points[player]
         file.write(str(player.player) + "%%" + str(tocke) + "\n")
     file.close()
+
+
+def setPoints(players):
+    for player in players:
+        points[player] = 0
+
+
+def addPoints(player, points):
+    points[player] += int(points)

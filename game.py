@@ -124,10 +124,9 @@ done = False
 
 players = [units.Player('player1', screen), units.Player('player2', screen)]
 
+setPoints(players)
 which_player = 0
 clock = pygame.time.Clock()
-
-ai_commands = [(4.5, "addsoldier")]
 
 # ------------------------------------------------------------------------
 # Stuff required for moving camera
@@ -220,19 +219,28 @@ settings = ""
 # ------------------------------------------------------------------------
 # Main game loop
 # ------------------------------------------------------------------------
-print("burek")
 font = pygame.font.SysFont("comicsansms", 25)
 
 while not done:  # main game loop
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
+            done = True  # Če je, pol zaključi z igro
+            highscoreToTxt(players)
+            continue
+    pressed = pygame.key.get_pressed()
+
     # ------------------------------------------------------------------------
     # Start menu
     # ------------------------------------------------------------------------
+
     while not selected:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
                 done = True  # Če je, pol zaključi z igro
-                selected = True  # Če je, pol zaključi z igro
+                highscoreToTxt(players)
+                continue
+        pressed = pygame.key.get_pressed()
 
         if pygame.mouse.get_pressed()[0]:
             # torej je lev prtisjen
@@ -261,14 +269,13 @@ while not done:  # main game loop
     # Highscore menu
     # ------------------------------------------------------------------------
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
-            done = True  # Če je, pol zaključi z igro
-            highscoreToTxt(players)
-
-    pressed = pygame.key.get_pressed()
-
     if highscore:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
+                done = True  # Če je, pol zaključi z igrodone = True  # Če je, pol zaključi z igro
+                highscoreToTxt(players)
+                continue
+        pressed = pygame.key.get_pressed()
 
         screen.blit(highscore_menu, (0, -20))
         highscores = bestHighscores()
@@ -293,13 +300,6 @@ while not done:  # main game loop
     # ------------------------------------------------------------------------
     # Settings menu
     # ------------------------------------------------------------------------
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
-            done = True  # Če je, pol zaključi z igro
-            highscoreToTxt(players)
-
-    pressed = pygame.key.get_pressed()
 
     if settings:
 
@@ -335,7 +335,11 @@ while not done:  # main game loop
             continue
 
     if game:
-
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
+                done = True  # Če je, pol zaključi z igro
+                highscoreToTxt(players)
+                continue
         if pressed[pygame.K_UP]:
             players[which_player].army[0].move("up")
         if pressed[pygame.K_DOWN]:
@@ -361,15 +365,15 @@ while not done:  # main game loop
             all_objects_on_screen[0].hp = all_objects_on_screen[0].max_hp
 
         if pressed[pygame.K_j]:
-            a = units.Soldier(screen, 400, 100, "./data/house.png", "bajta1", "player4")
+            a = units.House(screen, 400, 100, "./data/house.png", "bajta1", "player4")
             a.scalePicture(3)
             all_objects_on_screen.append(a)
 
-            b = units.Soldier(screen, 400, 300, "./data/house.png", "bajta2", "player4")
+            b = units.House(screen, 400, 300, "./data/house.png", "bajta2", "player4")
             b.scalePicture(3)
             all_objects_on_screen.append(b)
 
-            c = units.Soldier(screen, 400, 500, "./data/house.png", "bajta3", "player4")
+            c = units.House(screen, 400, 500, "./data/house.png", "bajta3", "player4")
             c.scalePicture(3)
             all_objects_on_screen.append(c)
 
@@ -434,10 +438,8 @@ while not done:  # main game loop
                                 which_player == 1 and object.player == "player2"):
                             # Če hoče taprav player premikat taprave unite
                             object.selected = 1
-                            object.move_times = 1
                         else:
                             object.selected = 0
-                            object.move_times = 0
 
                     else:
                         # Zdej si dobu ukaz, da se premakn tja kamor miška zdej kaže
@@ -450,10 +452,13 @@ while not done:  # main game loop
                         else:
                             object.selected = 0
                             object.move_times = 0
+                            object.moving = 0
 
         for selected_object in all_objects_on_screen:
             if selected_object.distance > 10:
                 selected_object.goTo(all_objects_on_screen)
+            else:
+                selected_object.moving = 0
 
         x, y = mouse_position
 

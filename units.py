@@ -24,7 +24,7 @@ class Unit:
         self.direction_y = 0
         self.selected = 0  # a je ta unit selectan?
         self.moveable = 0  # a se sploh lahko premika?
-        self.moving = True
+        self.moving = 0
         self.distance = 0  # Kok stran od cilja j e
         self.name = name  # Kako je temu unitu bolj natančno ime
         self.screen = screen  # kam sploh rišeš
@@ -75,6 +75,9 @@ class Unit:
         print("dead : ", self.dead)
         print("SELECTED : ", self.selected)
         print("move_times : ", self.move_times)
+        print("destination : ", self.direction_x)
+        print("destination : ", self.direction_y)
+        print("moving : ", self.moving)
         time.sleep(0.3)
         print("\n")
 
@@ -115,45 +118,64 @@ class Unit:
         :return: razdaljo od cilja
         """
 
-        #print("\n\n GOTO \n\n")
+        a_se_zabijam_v_koga = []
 
-        if not self.next_moves:
+
+        if self.moveable == 0:
+            return 0
+
+        if self.moving == 0:
+            self.next_moves = []
             self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
-            a_se_zabijam_v_koga = []
+            return self.distance
+
+        # print("sem v GOTO")
+        # Če nimam naslednjih move-ov, pomeni, da jih morm nekak dobit
+        if not self.next_moves:
+            print("in nimam self.next_moves")
+            # Najprej zračunam kok stran sploh sm
+            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
+
+            if self.distance < 10:
+                self.moving = 0
+                self.next_moves = []
+                return self.distance
+
+
+
+            if self.moving:
+                print("iscem nove komande kam morem it")
+                nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
+                os.system('powershell.exe python a_star.py')
+                self.fromCoordinatesGetDirections()
+                return self.distance
+            else:
+                print("kua kurca")
+                # Če se ne premikam pomeni, da morem vn iz te metode
+                return self.distance
+        else:
+
+            if len(self.next_moves) < 3:
+                self.next_moves = []
+                self.moving = 0
+                return self.distance
+
             for object in all_static_objects:
                 a_sm_se_zabil = collisionDetection(self, object)
                 if a_sm_se_zabil:
                     if self.player != object.player:
                         # pomen, da sm se zabil v nasprotnika
+                        print("ja ma kua, zakua se ne prefukavata?")
                         self.fight(object)
                     # torej sem najdu v koga se zabijam
                     # torej morm pogruntat kam se morm umaknt
-
                 a_se_zabijam_v_koga.append(a_sm_se_zabil)
 
             if any(a_se_zabijam_v_koga):
+                print("ja pa pzida, da bi se mogl neki kle stepst")
                 # print("zabiu sm se v nekoga")
                 return self.distance
 
-            if self.distance < 10:
-                self.moving = False
-                return self.distance
-
-            if self.moving:
-                self.move_times -= 1
-                if self.move_times >= 0:
-                    #self.print()
-                    nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
-                    os.system('powershell.exe python a_star.py')
-                    self.fromCoordinatesGetDirections()
-                else:
-                    return self.distance
-            else:
-                return self.distance
-        else:
-
-            if len(self.next_moves) < 3:
-                return self.distance
             kam = self.next_moves[0]
             self.speed = 10
             time.sleep(0.05)
@@ -165,7 +187,7 @@ class Unit:
 
     def setDestination(self, dest_x, dest_y):
 
-        self.move_times = 1
+        self.moving = 1
         self.direction_x = dest_x
         self.direction_y = dest_y
 
@@ -205,14 +227,16 @@ class Unit:
             crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
             pygame.mixer.Sound.play(crash_sound)
 
+        #f.addPoints(self.player, int(self.exp))
+
     def fromCoordinatesGetDirections(self):
 
         file = open("path.txt", "r")
         coordinates = file.readline()
 
         coordinates = coordinates[2:-2].split("), (")
-        #print("\n\n\n")
-        #print(coordinates)
+        # print("\n\n\n")
+        # print(coordinates)
 
         for terka1, terka2 in zip(coordinates, coordinates[1:]):
             x1, y1 = terka1.split(", ")
@@ -229,8 +253,8 @@ class Unit:
                 else:
                     self.next_moves.append("up")
 
-        #print(self.next_moves)
-        #print("\n\n\n")
+        # print(self.next_moves)
+        # print("\n\n\n")
 
 
 class Soldier(Unit):
@@ -244,6 +268,7 @@ class Soldier(Unit):
         self.range = 15
         self.cost = 50
         self.reload_time = 1
+        self.moveable = 1
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
@@ -264,6 +289,7 @@ class Archer(Unit):
         self.range = 50
         self.cost = 70
         self.reload_time = 1.5
+        self.moveable = 1
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
@@ -285,6 +311,7 @@ class Tank(Unit):
         self.range = 70
         self.cost = 200
         self.reload_time = 3
+        self.moveable = 1
 
     def levelUp(self):
         self.max_hp = self.max_hp * 2
@@ -315,13 +342,13 @@ class Player:
         self.number_of_tanks = 0
 
         self.last_soldier_added = time.time()
-        self.soldier_spawn_rate = 3
+        self.soldier_spawn_rate = 0.4
 
         self.last_archer_added = time.time()
-        self.archer_spawn_rate = 2
+        self.archer_spawn_rate = 0.4
 
         self.last_tank_added = time.time()
-        self.tank_spawn_rate = 5
+        self.tank_spawn_rate = 0.4
 
         self.experience = 0
         self.sound_enabled = 1
@@ -368,7 +395,6 @@ class Player:
             self.number_of_tanks += 1
             return soldier
         return 0
-
 
     def changeSoundSettings(self, sound_enabled):
         self.sound_enabled = sound_enabled
