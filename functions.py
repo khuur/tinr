@@ -19,7 +19,7 @@ def getImage(path):
         _image_library[path] = image
     return image
 
-def collisionDetection(object1, object2):
+def collisionDetection1(object1, object2):
     if (str(object1.player)) == (str(object2.player)):
         return False
 
@@ -29,7 +29,19 @@ def collisionDetection(object1, object2):
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
 
-def nafiliMrezo(all_static_objects, start, end, changed = 0):
+def collisionDetection(object1, object2):
+    # :return TRUE IF they are coliding
+    if (str(object1.player)) == (str(object2.player)):
+        return False
+
+    sum_r = (object1.r + object2.r) * (object1.r + object2.r)
+    distance = (object2.x - object1.x) ** 2 + (object2.y - object1.y) ** 2
+
+    if sum_r > distance:
+        return True
+    return False
+
+def nafiliMrezo(all_static_objects, start, end):
     w, h = 1300, 750
     # Mreza bo velikosti 130 x 80
     mreza = [[4 for x in range(0, w // 10)] for y in range(0, h // 10)]
@@ -83,7 +95,6 @@ def nafiliMrezo(all_static_objects, start, end, changed = 0):
 
     return mreza
 
-
 def bestHighscores():
     """
     This function returns best 3 highscores
@@ -100,7 +111,6 @@ def bestHighscores():
         return_best.append(
             "{0}. {1} - {2}".format(str(i + 1), str(player["name"]), str(player["score"])))  # and append as '1. Krisjan - 320'
     return return_best
-
 
 def highscoreToTxt(player):
 
@@ -129,3 +139,4 @@ def setPoints(player):
 
 def addPoints(player, points):
     points[player] += int(points)
+

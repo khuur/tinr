@@ -1,14 +1,10 @@
-import pygame
 import os
-from math import sqrt
-import units
-from functions import *
 import time
-from datetime import datetime
-import numpy as np
-from Astar import *
 
-import os
+import pygame
+from Astar import *
+from functions import *
+from math import sqrt
 
 
 class Unit:
