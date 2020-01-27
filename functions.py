@@ -29,7 +29,7 @@ def collisionDetection(object1, object2):
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
 
-def nafiliMrezo(all_static_objects, start, end):
+def nafiliMrezo(all_static_objects, start, end, changed = 0):
     w, h = 1300, 750
     # Mreza bo velikosti 130 x 80
     mreza = [[4 for x in range(0, w // 10)] for y in range(0, h // 10)]
@@ -102,20 +102,18 @@ def bestHighscores():
     return return_best
 
 
-def highscoreToTxt(players):
+def highscoreToTxt(player):
 
     URL = "http://173.212.198.11:3000/test/addHighscore"
 
-    for player in players:
-        tocke = 0
-        for unit in player.army:
-            tocke += unit.exp * 100
+    tocke = 0
+    for unit in player.army:
+        tocke += unit.exp * 100
 
-        #tocke += points
-        PARAMS = {'name': str(player.player), 'score': int(tocke)}
+    PARAMS = {'name': str(player.name), 'score': int(tocke)}
 
-        # sending get request and saving the response as response object
-        r = requests.post(url=URL, params=PARAMS)
+    # sending get request and saving the response as response object
+    r = requests.post(url=URL, params=PARAMS)
 
 def highscoreToDatabase():
 
@@ -126,9 +124,8 @@ def highscoreToDatabase():
     # extracting data in json format
     data = r.json()
 
-def setPoints(players):
-    for player in players:
-        points[player] = 0
+def setPoints(player):
+    points[player] = 0
 
 def addPoints(player, points):
     points[player] += int(points)

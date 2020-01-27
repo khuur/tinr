@@ -1,0 +1,111 @@
+
+def updateScreen1(deltaX, deltaY):
+    for object_on_screen in all_objects_on_screen:  # Gre čez vse objekte
+        if object_on_screen.dead:  # Če je ta objekt "mrtu"
+            all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
+        else:  # Torej je objekt "živ"
+            if object_on_screen.selected:  # Če ma atribut 'selected' na true
+                screen.blit(object_on_screen.image,
+                            # image_selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            (object_on_screen.x, object_on_screen.y))  # Izriše en 'selected' sprite
+            else:
+                screen.blit(object_on_screen.image,
+                            (object_on_screen.x, object_on_screen.y))  # Drugače pa 'normaln' sprite
+
+                normalX = zoom * (-(WIDTH / 2) + (object_on_screen.x - deltaX))
+                normalY = zoom * ((HEIGHT / 2) - (object_on_screen.y - deltaY))
+                topLeftX = width / 2 + normalX
+                topLeftY = height / 2 - normalY
+                if topLeftX + object_on_screen.w < 0 or topLeftX > width:
+                    toDraw = False
+                elif topLeftY > height or topLeftY + object_on_screen.h < 0:
+                    toDraw = False
+                else:
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(topLeftX, topLeftY, zoom * object_on_screen.w,
+                                                                    zoom * object_on_screen.h))
+
+
+
+
+# ------------------------------------------------------------------------
+# Stuff required for moving camera
+# ------------------------------------------------------------------------
+if False:
+    x = 0
+    y = 0
+    running = False
+    width = 800
+    height = 600
+    zoom = 1
+    allRects = []
+
+
+    class Shape:
+        def __init__(self, x, y, w, h):
+            self.x = x
+            self.y = y
+            self.w = w
+            self.h = h
+
+
+    def graphics(deltaX, deltaY):
+        screen.fill((255, 255, 255))
+        for rectangle in allRects:
+            toDraw = True
+            normalX = zoom * (-(width / 2) + (rectangle.x - deltaX))
+            normalY = zoom * ((height / 2) - (rectangle.y - deltaY))
+            topLeftX = width / 2 + normalX
+            topLeftY = height / 2 - normalY
+            if topLeftX + rectangle.w < 0 or topLeftX > width:
+                toDraw = False
+            elif topLeftY > height or topLeftY + rectangle.h < 0:
+                toDraw = False
+            else:
+                pygame.draw.rect(screen, (0, 0, 0),
+                                 pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
+
+
+    def trololo(deltaX, deltaY):
+        for rectangle in allRects:
+            toDraw = True
+            normalX = zoom * (-(width / 2) + (rectangle.x - deltaX))
+            normalY = zoom * ((height / 2) - (rectangle.y - deltaY))
+            topLeftX = width / 2 + normalX
+            topLeftY = height / 2 - normalY
+            if topLeftX + rectangle.w < 0 or topLeftX > width:
+                toDraw = False
+            elif topLeftY > height or topLeftY + rectangle.h < 0:
+                toDraw = False
+            else:
+                pygame.draw.rect(screen, (0, 0, 0),
+                                 pygame.Rect(topLeftX, topLeftY, zoom * rectangle.w, zoom * rectangle.h))
+
+
+    allRects.append(Shape(100, 30, 142, 14))
+    allRects.append(Shape(100, 120, 20, 14))
+    allRects.append(Shape(0, 30, 14, 174))
+    allRects.append(Shape(40, 340, 114, 14))
+
+    while running:
+        graphics(x, y)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        key = pygame.key.get_pressed()
+        if key[pygame.K_UP]:
+            zoom = zoom * 1.01
+        if key[pygame.K_DOWN]:
+            zoom = zoom * 0.99
+        if zoom < 0:
+            zoom = 0
+
+        if key[pygame.K_w]:
+            y -= 1 / zoom * 2
+        if key[pygame.K_s]:
+            y += 1 / zoom * 2
+        if key[pygame.K_a]:
+            x -= 1 / zoom * 2
+        if key[pygame.K_d]:
+            x += 1 / zoom * 2
+
+        pygame.display.update()

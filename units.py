@@ -291,7 +291,7 @@ class Boss(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
-        self.moveable = 1
+        self.moveable = 0
         self.hp = 200
         self.max_hp = 200
         self.attack = 10
@@ -337,11 +337,12 @@ class Goldmine(Unit):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.setHp(500)
+        self.moveable = 0
 
 class Player:
 
-    def __init__(self, player, screen):
-        self.player = player
+    def __init__(self, name, screen):
+        self.name = name
         self.army = []
         self.buildings = []
         self.screen = screen
@@ -351,6 +352,8 @@ class Player:
         self.number_of_soldiers = 0
         self.number_of_archers = 0
         self.number_of_tanks = 0
+        self.number_of_goldmines = 0
+        self.number_of_bosses = 0
 
         self.last_soldier_added = time.time()
         self.soldier_spawn_rate = 0.4
@@ -362,7 +365,7 @@ class Player:
         self.tank_spawn_rate = 0.4
 
         self.last_goldmine_added = time.time()
-        self.goldmine_spawn_rate = 5
+        self.goldmine_spawn_rate = 1
 
         self.experience = 0
         self.sound_enabled = 0
@@ -370,8 +373,8 @@ class Player:
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
             soldier = Soldier(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/' + str(self.player) + '/soldier.png', 'Soldier' + str(len(self.army)),
-                              self.player)
+                              './data/player1/soldier.png', 'Soldier' + str(len(self.army)),
+                              self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 50
@@ -386,8 +389,8 @@ class Player:
     def addArcher(self):
         if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0:
             soldier = Archer(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                             './data/' + str(self.player) + '/archer.png', 'Archer' + str(len(self.army)),
-                             self.player)
+                             './data/player1/archer.png', 'Archer' + str(len(self.army)),
+                             self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 70
@@ -401,8 +404,8 @@ class Player:
     def addTank(self):
         if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0:
             soldier = Tank(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                           './data/' + str(self.player) + '/tank.png', 'Tank' + str(len(self.army)),
-                           self.player)
+                           './data/player1/tank.png', 'Tank' + str(len(self.army)),
+                           self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
             self.gold -= 200
@@ -410,19 +413,38 @@ class Player:
             return soldier
         return 0
 
+    def addBoss(self, screen, x, y, hp, image_path):
+        boss = Boss(screen, x, y, image_path, "BOSS", "Enemy")
+        boss.setHp(hp)
+        self.army.append(boss)
+        if self.sound_enabled:
+            crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+            pygame.mixer.Sound.play(crash_sound)
+        self.number_of_bosses += 1
+        return boss
+
+    def addGoldmine(self):
+        if time.time() - self.last_goldmine_added > 20 and (self.gold - 200) > 0:
+
+            x = [200, 260, 715]
+            y = [620, 240, 425]
+
+            goldmine = Goldmine(self.screen, x[self.number_of_goldmines], y[self.number_of_goldmines],
+                             './data/goldmine.png', 'Goldmine' + str(self.number_of_goldmines), self.name)
+            goldmine.scalePicture(2)
+            self.buildings.append(goldmine)
+            self.last_goldmine_added = time.time()
+            self.gold -= 200
+            if self.sound_enabled:
+                crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+                pygame.mixer.Sound.play(crash_sound)
+            self.number_of_goldmines += 1
+            self.gold_per_second += 3
+            return goldmine
+        return 0
+
     def changeSoundSettings(self, sound_enabled):
         self.sound_enabled = sound_enabled
         for x in self.army:
             x.sound_enabled = sound_enabled
-
-    def addBoss(self, screen, x, y, image_path, player):
-        boss = Boss(screen, x, y,
-                          image_path, 'BOSS' + str(len(self.army)),
-                          player)
-        self.army.append(boss)
-        crash_sound = pygame.mixer.Sound("./data/whiff.wav")
-        if self.sound_enabled:
-            pygame.mixer.Sound.play(crash_sound)
-        self.number_of_soldiers += 1
-        return boss
 
