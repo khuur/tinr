@@ -3,14 +3,21 @@ import os
 from math import sqrt
 import units
 from functions import *
+import requests
 import time
 
 points = {}
 
-
 def euclideanDistance(object1, object2):
     return sqrt((object2.x - object1.x) ** 2 + (object2.y - object1.y) ** 2)
-
+def getImage(path):
+    global _image_library
+    image = _image_library.get(path)
+    if image is None:
+        canonicalized_path = path.replace('/', os.sep).replace('\\', os.sep)
+        image = pygame.image.load(canonicalized_path)
+        _image_library[path] = image
+    return image
 
 def collisionDetection(object1, object2):
     if (str(object1.player)) == (str(object2.player)):
@@ -22,19 +29,8 @@ def collisionDetection(object1, object2):
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
 
-
-def getImage(path):
-    global _image_library
-    image = _image_library.get(path)
-    if image is None:
-        canonicalized_path = path.replace('/', os.sep).replace('\\', os.sep)
-        image = pygame.image.load(canonicalized_path)
-        _image_library[path] = image
-    return image
-
-
 def nafiliMrezo(all_static_objects, start, end):
-    w, h = 1300, 800
+    w, h = 1300, 750
     # Mreza bo velikosti 130 x 80
     mreza = [[4 for x in range(0, w // 10)] for y in range(0, h // 10)]
 
@@ -93,42 +89,46 @@ def bestHighscores():
     This function returns best 3 highscores
     :return: ['1. Krisjan - 320', '2. Janez - 120', '3. Miha - 110']
     """
-    file = open("highscore.txt", "r")
 
+    URL = "http://173.212.198.11:3000/test/highscores"
+
+    r = requests.get(url=URL)
     return_best = []
-    highscores = []
-    for line in file:
-        ime, score = line.split("%%")  # Prebere vsako vrstico v file-u
-        score = int(score)
-        terka = (score, ime)  # In ju zapiše v terko
-        highscores.append(terka)  # Ki ju nato appenda v seznam
-    file.close()
-    highscores = sorted(highscores, reverse=True)  # Da ga lahko na tej točki sortam
-    print(highscores)
-    for i in range(3):  # best 3 highscores
-        score, name = highscores[i]  # unpack from (320, 'Kristjan')
+
+    data = r.json()
+    for i, player in enumerate(data["message"]):
         return_best.append(
-            "{0}. {1} - {2}".format(str(i + 1), str(name), str(score)))  # and append as '1. Krisjan - 320'
+            "{0}. {1} - {2}".format(str(i + 1), str(player["name"]), str(player["score"])))  # and append as '1. Krisjan - 320'
     return return_best
 
 
 def highscoreToTxt(players):
-    file = open("highscore.txt", "a")  # a stands for append
+
+    URL = "http://173.212.198.11:3000/test/addHighscore"
 
     for player in players:
         tocke = 0
         for unit in player.army:
             tocke += unit.exp * 100
 
-        #tocke += points[player]
-        file.write(str(player.player) + "%%" + str(tocke) + "\n")
-    file.close()
+        #tocke += points
+        PARAMS = {'name': str(player.player), 'score': int(tocke)}
 
+        # sending get request and saving the response as response object
+        r = requests.post(url=URL, params=PARAMS)
+
+def highscoreToDatabase():
+
+
+
+
+
+    # extracting data in json format
+    data = r.json()
 
 def setPoints(players):
     for player in players:
         points[player] = 0
-
 
 def addPoints(player, points):
     points[player] += int(points)

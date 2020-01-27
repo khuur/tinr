@@ -3,7 +3,6 @@ import os
 from math import sqrt
 import units
 from functions import *
-import functions as f
 import time
 from datetime import datetime
 import numpy as np
@@ -41,8 +40,7 @@ class Unit:
 
         self.w = self.rect[2]
         self.h = self.rect[3]
-
-        self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
+        self.r = sqrt(self.w ** 2 + self.h ** 2)
 
         self.cost = 0
 
@@ -88,10 +86,11 @@ class Unit:
         self.r = (self.rect[2] // 2 + self.rect[3] // 2) // 2  # Radij tega unita
 
     def updateCenter(self):
-        self.center_x = self.x + (self.rect[2] // 2)
-        self.center_y = self.y + (self.rect[3] // 2)
         self.w = self.rect[2]
         self.h = self.rect[3]
+        self.center_x = self.x + (self.w // 2)
+        self.center_y = self.y + (self.h // 2)
+        self.r = sqrt(self.w ** 2 + self.h ** 2)
 
     def move(self, direction):
 
@@ -120,19 +119,16 @@ class Unit:
 
         a_se_zabijam_v_koga = []
 
+        if self.moveable == 0:  # Če je prišlo do "napake" in želim prestaviti objekt, ki je statičen
+            return -1
 
-        if self.moveable == 0:
-            return 0
+        if self.moving == 0: # Če sem mu nekje diseable-u move
+            self.next_moves = [] # Nimaš kam naprej za hodit
+            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2) # Povej kolk stran si
+            return self.distance # in to vrni
 
-        if self.moving == 0:
-            self.next_moves = []
-            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
-            return self.distance
-
-        # print("sem v GOTO")
         # Če nimam naslednjih move-ov, pomeni, da jih morm nekak dobit
         if not self.next_moves:
-            print("in nimam self.next_moves")
             # Najprej zračunam kok stran sploh sm
             self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
 
@@ -141,20 +137,16 @@ class Unit:
                 self.next_moves = []
                 return self.distance
 
-
-
-            if self.moving:
+            if self.moving == 1:
                 print("iscem nove komande kam morem it")
                 nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
                 os.system('powershell.exe python a_star.py')
                 self.fromCoordinatesGetDirections()
                 return self.distance
             else:
-                print("kua kurca")
                 # Če se ne premikam pomeni, da morem vn iz te metode
                 return self.distance
         else:
-
             if len(self.next_moves) < 3:
                 self.next_moves = []
                 self.moving = 0
@@ -165,15 +157,12 @@ class Unit:
                 if a_sm_se_zabil:
                     if self.player != object.player:
                         # pomen, da sm se zabil v nasprotnika
-                        print("ja ma kua, zakua se ne prefukavata?")
                         self.fight(object)
                     # torej sem najdu v koga se zabijam
                     # torej morm pogruntat kam se morm umaknt
                 a_se_zabijam_v_koga.append(a_sm_se_zabil)
 
             if any(a_se_zabijam_v_koga):
-                print("ja pa pzida, da bi se mogl neki kle stepst")
-                # print("zabiu sm se v nekoga")
                 return self.distance
 
             kam = self.next_moves[0]
@@ -277,7 +266,6 @@ class Soldier(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
-
 class Archer(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
@@ -299,6 +287,22 @@ class Archer(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
+class Boss(Unit):
+    def __init__(self, screen, x, y, image_path, name, player):
+        """Initialize the soldier and set its starting position."""
+        super().__init__(screen, x, y, image_path, name, player)
+        self.moveable = 1
+        self.hp = 200
+        self.max_hp = 200
+        self.attack = 10
+        self.range = 20
+        self.cost = 70
+        self.reload_time = 1.5
+        self.moveable = 1
+        self.scalePicture(3)
+
+    def levelUp(self):
+        pass
 
 class Tank(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
@@ -320,7 +324,6 @@ class Tank(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
-
 class House(Unit):
 
     def __init__(self, screen, x, y, image_path, name, player):
@@ -328,6 +331,12 @@ class House(Unit):
         super().__init__(screen, x, y, image_path, name, player)
         self.setHp(500)
 
+class Goldmine(Unit):
+
+    def __init__(self, screen, x, y, image_path, name, player):
+        """Initialize the soldier and set its starting position."""
+        super().__init__(screen, x, y, image_path, name, player)
+        self.setHp(500)
 
 class Player:
 
@@ -337,6 +346,8 @@ class Player:
         self.buildings = []
         self.screen = screen
         self.gold = 30000
+        self.gold_per_second = 1
+        self.got_gold = time.time()
         self.number_of_soldiers = 0
         self.number_of_archers = 0
         self.number_of_tanks = 0
@@ -350,8 +361,11 @@ class Player:
         self.last_tank_added = time.time()
         self.tank_spawn_rate = 0.4
 
+        self.last_goldmine_added = time.time()
+        self.goldmine_spawn_rate = 5
+
         self.experience = 0
-        self.sound_enabled = 1
+        self.sound_enabled = 0
 
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
@@ -400,3 +414,15 @@ class Player:
         self.sound_enabled = sound_enabled
         for x in self.army:
             x.sound_enabled = sound_enabled
+
+    def addBoss(self, screen, x, y, image_path, player):
+        boss = Boss(screen, x, y,
+                          image_path, 'BOSS' + str(len(self.army)),
+                          player)
+        self.army.append(boss)
+        crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+        if self.sound_enabled:
+            pygame.mixer.Sound.play(crash_sound)
+        self.number_of_soldiers += 1
+        return boss
+

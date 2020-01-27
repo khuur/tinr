@@ -15,8 +15,6 @@ def updateScreen():
         if object_on_screen.dead:  # Če je ta objekt "mrtu"
             all_objects_on_screen.remove(object_on_screen)  # Ga odstrani iz seznama prikazovanja
 
-            print(object_on_screen.name)
-
             if object_on_screen.player == "player1":
                 if "Soldier" in object_on_screen.name:
                     players[0].number_of_soldiers -= 1
@@ -99,6 +97,7 @@ mouse_clicks = (0, 0, 0)  # Keri knofi na miški so prtisjeni
 mouse_position = (411, 348)  # Kje je miška trenutno
 
 pygame.init()  # Da se pygame začne
+#screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)  # Kam bom sploh risu stvari
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # Kam bom sploh risu stvari
 pygame.display.set_caption("Kris's game")  # Da mam svoj caption :3
 background_image = pygame.image.load("./data/blurred_map.jpg").convert()  # Kar je v ozadju narisano
@@ -127,6 +126,9 @@ players = [units.Player('player1', screen), units.Player('player2', screen)]
 setPoints(players)
 which_player = 0
 clock = pygame.time.Clock()
+
+
+all_objects_on_screen.append(players[1].addBoss(screen, 900, 100, "./data/chimp.bmp", "player000"))
 
 # ------------------------------------------------------------------------
 # Stuff required for moving camera
@@ -216,6 +218,16 @@ game = ""
 highscore = ""
 settings = ""
 
+
+selected = 1
+game = 1
+highscore = 0
+settings = 0
+
+
+
+
+
 # ------------------------------------------------------------------------
 # Main game loop
 # ------------------------------------------------------------------------
@@ -229,6 +241,8 @@ while not done:  # main game loop
             highscoreToTxt(players)
             continue
     pressed = pygame.key.get_pressed()
+
+
 
     # ------------------------------------------------------------------------
     # Start menu
@@ -356,13 +370,9 @@ while not done:  # main game loop
             which_player = 1
 
         if pressed[pygame.K_g]:
-            # print(all_objects_on_screen[0].rect)
-            # all_objects_on_screen[0].scalePicture(1.2)
-
-            time.sleep(5)
-
-        if pressed[pygame.K_h]:
-            all_objects_on_screen[0].hp = all_objects_on_screen[0].max_hp
+            a = units.House(screen, 400, 100, "./data/goldmine.jpg", "bajta1", "player4")
+            a.scalePicture(3)
+            all_objects_on_screen.append(a)
 
         if pressed[pygame.K_j]:
             a = units.House(screen, 400, 100, "./data/house.png", "bajta1", "player4")
@@ -473,3 +483,7 @@ while not done:  # main game loop
 
         pygame.display.flip()
         clock.tick(60)
+
+        if time.time() - players[0].got_gold > 1:
+            players[0].gold += players[0].gold_per_second
+            players[0].got_gold = time.time()
