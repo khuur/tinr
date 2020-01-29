@@ -91,7 +91,6 @@ class Unit:
         self.center_y = self.y + (self.h // 2)
         self.r = sqrt(self.w ** 2 + self.h ** 2)
 
-
     def move(self, direction):
 
         if direction == "up":
@@ -122,10 +121,11 @@ class Unit:
         if self.moveable == 0:  # Če je prišlo do "napake" in želim prestaviti objekt, ki je statičen
             return -1
 
-        if self.moving == 0: # Če sem mu nekje diseable-u move
-            self.next_moves = [] # Nimaš kam naprej za hodit
-            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2) # Povej kolk stran si
-            return self.distance # in to vrni
+        if self.moving == 0:  # Če sem mu nekje diseable-u move
+            self.next_moves = []  # Nimaš kam naprej za hodit
+            self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (
+                        self.direction_y - self.center_y) ** 2)  # Povej kolk stran si
+            return self.distance  # in to vrni
 
         # Če nimam naslednjih move-ov, pomeni, da jih morm nekak dobit
         if not self.next_moves:
@@ -192,41 +192,35 @@ class Unit:
         if self.moveable == 0:  # Če je prišlo do "napake" in želim prestaviti objekt, ki je statičen
             return -1
 
+        self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (
+                self.direction_y - self.center_y) ** 2)  # Povej kolk stran si
+
         rect = Rectangle(self.x, self.y, self.w, self.h)
         vse_tocke_v_mojem_obmocju = quadTree.query(rect)
-
 
         distance = sqrt((boss.x - self.center_x) ** 2 + (
                 boss.y - self.center_y) ** 2)  # Povej kolk stran si
 
-
         if distance < self.range:
             self.fight(boss)
             return
-
 
         for tocka in vse_tocke_v_mojem_obmocju:
             if "BOSS" in tocka.unit.name:
                 self.fight(tocka.unit)
                 return
 
-            if self.distance > 10:
+        if self.distance > 10:
 
-                if self.x < self.direction_x:
-                    self.move("right")
-                else:
-                    self.move("left")
+            if self.x < self.direction_x:
+                self.move("right")
+            else:
+                self.move("left")
 
-                if self.y < self.direction_y:
-                    self.move("down")
-                else:
-                    self.move("up")
-
-        self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (
-                self.direction_y - self.center_y) ** 2)  # Povej kolk stran si
-
-
-
+            if self.y < self.direction_y:
+                self.move("down")
+            else:
+                self.move("up")
 
     def setDestination(self, dest_x, dest_y):
 
@@ -269,8 +263,8 @@ class Unit:
         if self.sound_enabled:
             crash_sound = pygame.mixer.Sound("./data/secosmic_lo.wav")
             pygame.mixer.Sound.play(crash_sound)
-
-        #f.addPoints(self.player, int(self.exp))
+        if self.player != "Enemy":
+            addPoints(self.player, int(self.exp))
 
     def fromCoordinatesGetDirections(self):
 
@@ -320,6 +314,7 @@ class Soldier(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
+
 class Archer(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
@@ -341,6 +336,7 @@ class Archer(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
+
 class Boss(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
@@ -356,6 +352,7 @@ class Boss(Unit):
 
     def levelUp(self):
         pass
+
 
 class Tank(Unit):
     def __init__(self, screen, x, y, image_path, name, player):
@@ -377,12 +374,14 @@ class Tank(Unit):
         self.scalePicture(1.2)
         self.level += 1
 
+
 class House(Unit):
 
     def __init__(self, screen, x, y, image_path, name, player):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.setHp(500)
+
 
 class Goldmine(Unit):
 
@@ -391,6 +390,7 @@ class Goldmine(Unit):
         super().__init__(screen, x, y, image_path, name, player)
         self.setHp(500)
         self.moveable = 0
+
 
 class Player:
 
@@ -431,8 +431,9 @@ class Player:
         self.sound_enabled = 0
 
     def addSoldier(self):
-        if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0 and self.population < self.max_population:
-            soldier = Soldier(self.screen, 200 + self.population * 30, 300 + self.population* 30,
+        if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (
+                self.gold - 50) > 0 and self.population < self.max_population:
+            soldier = Soldier(self.screen, 200 + self.population * 30, 300 + self.population * 30,
                               './data/player1/soldier.png', 'Soldier' + str(self.population),
                               self.name)
             self.army.append(soldier)
@@ -448,7 +449,8 @@ class Player:
         return 0
 
     def addArcher(self):
-        if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0 and self.population < self.max_population:
+        if time.time() - self.last_soldier_added > self.archer_spawn_rate and (
+                self.gold - 70) > 0 and self.population < self.max_population:
             soldier = Archer(self.screen, 200 + self.population * 30, 300 + self.population * 30,
                              './data/player1/archer.png', 'Archer' + str(self.population),
                              self.name)
@@ -464,7 +466,8 @@ class Player:
         return 0
 
     def addTank(self):
-        if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0 and self.population < self.max_population:
+        if time.time() - self.last_soldier_added > self.tank_spawn_rate and (
+                self.gold - 200) > 0 and self.population < self.max_population:
             soldier = Tank(self.screen, 200 + self.population * 30, 300 + self.population * 30,
                            './data/player1/tank.png', 'Tank' + str(self.population),
                            self.name)
@@ -493,7 +496,7 @@ class Player:
             y = [620, 240, 425]
 
             goldmine = Goldmine(self.screen, x[self.number_of_goldmines], y[self.number_of_goldmines],
-                             './data/goldmine.png', 'Goldmine' + str(self.number_of_goldmines), self.name)
+                                './data/goldmine.png', 'Goldmine' + str(self.number_of_goldmines), self.name)
             goldmine.scalePicture(2)
             self.buildings.append(goldmine)
             self.last_goldmine_added = time.time()
@@ -509,8 +512,8 @@ class Player:
     def addHouse(self, x, y):
         if time.time() - self.last_house_added > 10 and (self.gold - 500) > 0:
 
-            house = House(self.screen, x-50, y-50,
-                             './data/house.png', 'House' + str(self.number_of_houses), self.name)
+            house = House(self.screen, x - 50, y - 50,
+                          './data/house.png', 'House' + str(self.number_of_houses), self.name)
             house.scalePicture(2)
             self.buildings.append(house)
             self.last_house_added = time.time()
@@ -523,10 +526,7 @@ class Player:
             return house
         return 0
 
-
-
     def changeSoundSettings(self, sound_enabled):
         self.sound_enabled = sound_enabled
         for x in self.army:
             x.sound_enabled = sound_enabled
-

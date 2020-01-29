@@ -134,18 +134,17 @@ def highscoreToTxt(player):
     r = requests.post(url=URL, params=PARAMS)
 
 
-def highscoreToDatabase():
-    # extracting data in json format
-    data = r.json()
+def highscoreToDatabase(player_name):
 
+    URL = "http://173.212.198.11:3000/test/addHighscore/" + player_name + "&" + str(points[player_name])
+
+    requests.get(url=URL)
 
 def setPoints(player):
     points[player] = 0
 
-
-def addPoints(player, points):
-    points[player] += int(points)
-
+def addPoints(player, point):
+    points[player] += int(point)
 
 
 class Point:

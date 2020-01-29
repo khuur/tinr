@@ -5,7 +5,7 @@ import units
 from functions import *
 import time
 
-debug = 1
+debug = 0
 
 
 # ------------------------------------------------------------------------
@@ -33,6 +33,7 @@ def updateScreen():
                 all_objects_on_screen.append(boss)
                 player.gold_per_second += 10
                 player.gold += 1000
+                addPoints(player_name, 330)
 
             elif object_on_screen.name == "BOSS2":
                 boss = enemy.addBoss(screen, 700, 100, 800, "BOSS3", "./data/boss/boss3.png")
@@ -40,6 +41,7 @@ def updateScreen():
                 all_objects_on_screen.append(boss)
                 player.gold_per_second += 20
                 player.gold += 2000
+                addPoints(player_name, 620)
 
             elif object_on_screen.name == "BOSS3":
                 boss = enemy.addBoss(screen, 600, 100, 1200, "BOSS4", "./data/boss/boss4.png")
@@ -47,6 +49,7 @@ def updateScreen():
                 all_objects_on_screen.append(boss)
                 player.gold_per_second += 40
                 player.gold += 4000
+                addPoints(player_name, 1222)
 
 
 
@@ -123,7 +126,7 @@ player_name = "Kristjan"
 player = units.Player(player_name, screen)
 enemy = units.Player('Enemy', screen)
 
-setPoints(player)
+setPoints(player_name)
 clock = pygame.time.Clock()
 
 boss = enemy.addBoss(screen, 900, 100, 200, "BOSS1", "./data/boss/boss1.png")
@@ -151,7 +154,9 @@ while not done:  # main game loop
         if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
             done = True  # Če je, pol zaključi z igro
             highscoreToTxt(player)
-            continue
+            addPoints(player_name, int(player.gold//100))
+            yes = highscoreToDatabase(player_name)
+            break
     pressed = pygame.key.get_pressed()
 
     # ------------------------------------------------------------------------
@@ -162,8 +167,10 @@ while not done:  # main game loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
                 done = True  # Če je, pol zaključi z igro
-                highscoreToTxt(players)
-                continue
+                highscoreToTxt(player)
+                addPoints(player_name, int(player.gold//100))
+                yes = highscoreToDatabase(player_name)
+                break
         pressed = pygame.key.get_pressed()
 
         if pygame.mouse.get_pressed()[0]:
@@ -263,15 +270,17 @@ while not done:  # main game loop
             if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
                 done = True  # Če je, pol zaključi z igro
                 highscoreToTxt(player)
-                continue
+                addPoints(player_name, int(player.gold//100))
+                yes = highscoreToDatabase(player_name)
+                break
         if pressed[pygame.K_UP]:
-            enemy.army[0].move("up")
+            boss.move("up")
         if pressed[pygame.K_DOWN]:
-            enemy.army[0].move("down")
+            boss.move("down")
         if pressed[pygame.K_LEFT]:
-            enemy.army[0].move("left")
+            boss.move("left")
         if pressed[pygame.K_RIGHT]:
-            enemy.army[0].move("right")
+            boss.move("right")
 
         if pressed[pygame.K_q]:
             which_player = 0
