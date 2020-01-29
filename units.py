@@ -107,7 +107,7 @@ class Unit:
         elif which_one == "selected":
             self.image_selected = getImage(path)
 
-    def goTo(self, all_static_objects):
+    def goTo(self, all_static_objects, quadTree):
         """
         Ta funkcija premakne ta unit tja kamor je namenjen (direction_x, y)
         :return: razdaljo od cilja
@@ -135,7 +135,7 @@ class Unit:
 
             if self.moving == 1:
                 print("iscem nove komande kam morem it")
-                nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
+                mreza = nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
                 os.system('powershell.exe python a_star.py')
                 self.fromCoordinatesGetDirections()
                 return self.distance
@@ -147,8 +147,13 @@ class Unit:
                 self.next_moves = []
                 self.moving = 0
                 return self.distance
+            rect = Rectangle(self.x, self.y, self.w, self.h)
+            vse_tocke_v_mojem_obmocju = quadTree.query(rect)
+
+            print(vse_tocke_v_mojem_obmocju)
 
             for object in all_static_objects:
+
                 a_sm_se_zabil = collisionDetection(self, object)
                 if a_sm_se_zabil:
                     if self.player != object.player:
@@ -350,6 +355,10 @@ class Player:
         self.number_of_tanks = 0
         self.number_of_goldmines = 0
         self.number_of_bosses = 0
+        self.number_of_houses = 0
+
+        self.population = 0
+        self.max_population = 5
 
         self.last_soldier_added = time.time()
         self.soldier_spawn_rate = 0.4
@@ -363,11 +372,14 @@ class Player:
         self.last_goldmine_added = time.time()
         self.goldmine_spawn_rate = 1
 
+        self.last_house_added = time.time()
+        self.house_spawn_rate = 1
+
         self.experience = 0
         self.sound_enabled = 0
 
     def addSoldier(self):
-        if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0:
+        if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0 and self.population < self.max_population:
             soldier = Soldier(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                               './data/player1/soldier.png', 'Soldier' + str(len(self.army)),
                               self.name)
@@ -378,12 +390,13 @@ class Player:
             if self.sound_enabled:
                 pygame.mixer.Sound.play(crash_sound)
             self.number_of_soldiers += 1
+            self.population += 1
             return soldier
 
         return 0
 
     def addArcher(self):
-        if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0:
+        if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0 and self.population < self.max_population:
             soldier = Archer(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                              './data/player1/archer.png', 'Archer' + str(len(self.army)),
                              self.name)
@@ -398,7 +411,7 @@ class Player:
         return 0
 
     def addTank(self):
-        if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0:
+        if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0 and self.population < self.max_population:
             soldier = Tank(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
                            './data/player1/tank.png', 'Tank' + str(len(self.army)),
                            self.name)
@@ -406,6 +419,7 @@ class Player:
             self.last_soldier_added = time.time()
             self.gold -= 200
             self.number_of_tanks += 1
+            self.population += 1
             return soldier
         return 0
 
@@ -438,6 +452,25 @@ class Player:
             self.gold_per_second += 3
             return goldmine
         return 0
+
+    def addHouse(self, x, y):
+        if time.time() - self.last_house_added > 10 and (self.gold - 500) > 0:
+
+            house = House(self.screen, x-50, y-50,
+                             './data/house.png', 'House' + str(self.number_of_houses), self.name)
+            house.scalePicture(2)
+            self.buildings.append(house)
+            self.last_house_added = time.time()
+            self.gold -= 500
+            if self.sound_enabled:
+                crash_sound = pygame.mixer.Sound("./data/whiff.wav")
+                pygame.mixer.Sound.play(crash_sound)
+            self.number_of_houses += 1
+            self.max_population += 5
+            return house
+        return 0
+
+
 
     def changeSoundSettings(self, sound_enabled):
         self.sound_enabled = sound_enabled

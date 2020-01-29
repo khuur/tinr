@@ -22,7 +22,8 @@ def updateScreen():
             elif "Tank" in object_on_screen.name:
                 player.number_of_tanks -= 1
 
-
+            #player.army.remove(object_on_screen)
+            player.population -= 1
 
         else:  # Torej je objekt "živ"
             if object_on_screen.selected:  # Če ma atribut 'selected' na true
@@ -256,9 +257,10 @@ while not done:  # main game loop
                 all_objects_on_screen.append(a)
 
         if pressed[pygame.K_h]:
-            a = units.House(screen, 400, 100, "./data/goldmine.jpg", "bajta1", "player4")
-            a.scalePicture(3)
-            all_objects_on_screen.append(a)
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            a = player.addHouse(mouse_x, mouse_y)
+            if a:
+                all_objects_on_screen.append(a)
 
         if pressed[pygame.K_r]:
             print("*" * 50)
@@ -294,6 +296,14 @@ while not done:  # main game loop
                 elif 636 < mouse_y < 695:
                     print("ADD Soldier5")
 
+        rect = Rectangle(WIDTH/2,HEIGHT/2, WIDTH/2, HEIGHT/2)
+        quadTree = QuadTree(rect, 4)
+
+        for o in all_objects_on_screen:
+            neki = Point(o.x, o.y, o.r)
+            quadTree.insert(neki)
+
+
         if mouse_clicks != pygame.mouse.get_pressed():
             # al je nekdo pritisnu na miško al pa spustu knof
             lev, sredn, desn = mouse_clicks
@@ -318,7 +328,7 @@ while not done:  # main game loop
                             for selected_object in all_objects_on_screen:
                                 if selected_object.selected:
                                     selected_object.setDestination(mouse_position[0], mouse_position[1])
-                                    selected_object.goTo(all_objects_on_screen)
+                                    selected_object.goTo(all_objects_on_screen, quadTree)
                         else:
                             object.selected = 0
                             object.move_times = 0
@@ -326,7 +336,7 @@ while not done:  # main game loop
 
         for selected_object in all_objects_on_screen:
             if selected_object.moveable and selected_object.distance > 10:
-                selected_object.goTo(all_objects_on_screen)
+                selected_object.goTo(all_objects_on_screen, quadTree)
             else:
                 selected_object.moving = 0
 

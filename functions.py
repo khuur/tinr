@@ -8,8 +8,11 @@ import time
 
 points = {}
 
+
 def euclideanDistance(object1, object2):
     return sqrt((object2.x - object1.x) ** 2 + (object2.y - object1.y) ** 2)
+
+
 def getImage(path):
     global _image_library
     image = _image_library.get(path)
@@ -19,15 +22,17 @@ def getImage(path):
         _image_library[path] = image
     return image
 
+
 def collisionDetection1(object1, object2):
     if (str(object1.player)) == (str(object2.player)):
         return False
 
     sum_r = object1.r + object2.r  # Sum of both radius
-    distance = euclideanDistance(object1, object2)   # Actual distance between objects
+    distance = euclideanDistance(object1, object2)  # Actual distance between objects
 
     # if radius is larger than acutal distance, means that they are colideing
     return sum_r > distance
+
 
 def collisionDetection(object1, object2):
     # :return TRUE IF they are coliding
@@ -40,6 +45,7 @@ def collisionDetection(object1, object2):
     if sum_r > distance:
         return True
     return False
+
 
 def nafiliMrezo(all_static_objects, start, end):
     w, h = 1300, 750
@@ -95,6 +101,7 @@ def nafiliMrezo(all_static_objects, start, end):
 
     return mreza
 
+
 def bestHighscores():
     """
     This function returns best 3 highscores
@@ -109,11 +116,12 @@ def bestHighscores():
     data = r.json()
     for i, player in enumerate(data["message"]):
         return_best.append(
-            "{0}. {1} - {2}".format(str(i + 1), str(player["name"]), str(player["score"])))  # and append as '1. Krisjan - 320'
+            "{0}. {1} - {2}".format(str(i + 1), str(player["name"]),
+                                    str(player["score"])))  # and append as '1. Krisjan - 320'
     return return_best
 
-def highscoreToTxt(player):
 
+def highscoreToTxt(player):
     URL = "http://173.212.198.11:3000/test/addHighscore"
 
     tocke = 0
@@ -125,18 +133,131 @@ def highscoreToTxt(player):
     # sending get request and saving the response as response object
     r = requests.post(url=URL, params=PARAMS)
 
+
 def highscoreToDatabase():
-
-
-
-
-
     # extracting data in json format
     data = r.json()
+
 
 def setPoints(player):
     points[player] = 0
 
+
 def addPoints(player, points):
     points[player] += int(points)
 
+
+
+class Point:
+    def __init__(self, x, y, r):
+        self.x = x
+        self.y = y
+        self.r = r
+        self.highlight = False
+
+    def intersects(self, other):
+        return euclideanDistance(self, other) < (self.r + other.r)
+
+    def setHighlight(self, what):
+        self.highlight = what
+
+class Rectangle:
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+    def intersects(self, range):
+        return not (
+                range.x - range.w > self.x + self.w or
+                range.x + range.w < self.x - self.w or
+                range.y - range.h > self.y + self.h or
+                range.y + range.h < self.y - self.h
+        )
+
+    def contains(self, point):
+        return (self.x - self.w < point.x < self.x + self.w and
+                self.y - self.h < point.y < self.y + self.h)
+
+
+class QuadTree:
+    def __init__(self, rect, capacity):
+        self.boundary = rect
+        self.capacity = capacity
+        self.points = []
+        self.divided = False
+
+    def subdivide(self):
+
+        x = self.boundary.x
+        y = self.boundary.y
+        w = self.boundary.w
+        h = self.boundary.h
+
+        ne = Rectangle(x + w / 2, y - h / 2, w / 2, h / 2)
+        self.northeast = QuadTree(ne, self.capacity)
+
+        nw = Rectangle(x - w / 2, y - h / 2, w / 2, h / 2)
+        self.northwest = QuadTree(nw, self.capacity)
+
+        se = Rectangle(x + w / 2, y + h / 2, w / 2, h / 2)
+        self.southeast = QuadTree(se, self.capacity)
+
+        sw = Rectangle(x - w / 2, y + h / 2, w / 2, h / 2)
+        self.southwest = QuadTree(sw, self.capacity)
+
+        self.divided = True
+
+    def insert(self, point):
+
+        if not self.boundary.contains(point):
+            return
+
+        if len(self.points) < self.capacity:
+            self.points.append(point)
+            return True
+        else:
+            self.subdivide()
+
+        inserted = [False]
+
+        if not any(inserted):
+            inserted.append(self.northeast.insert(point))
+            return True
+
+        if not any(inserted):
+            inserted.append(self.northwest.insert(point))
+            return True
+
+        if not any(inserted):
+            inserted.append(self.southeast.insert(point))
+            return True
+
+        if not any(inserted):
+            inserted.append(self.southwest.insert(point))
+            return True
+
+    def query(self, range):
+
+        found = []
+
+        if not self.boundary.intersects(range):
+            return found
+
+        for point in self.points:
+            if range.contains(point):
+                found.append(point)
+
+        if self.divided:
+            for point in self.northwest.query(range):
+                found.append(point)
+            for point in self.northeast.query(range):
+                found.append(point)
+
+            for point in self.southwest.query(range):
+                found.append(point)
+            for point in self.southeast.query(range):
+                found.append(point)
+
+        return found
