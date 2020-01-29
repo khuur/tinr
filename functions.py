@@ -149,11 +149,12 @@ def addPoints(player, points):
 
 
 class Point:
-    def __init__(self, x, y, r):
+    def __init__(self, x, y, r, unit):
         self.x = x
         self.y = y
         self.r = r
         self.highlight = False
+        self.unit = unit
 
     def intersects(self, other):
         return euclideanDistance(self, other) < (self.r + other.r)
@@ -260,7 +261,3 @@ class QuadTree:
                 found.append(point)
 
         return found
-
-
-class Node:
-    pass

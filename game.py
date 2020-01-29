@@ -6,6 +6,8 @@ from functions import *
 import time
 
 debug = 1
+
+
 # ------------------------------------------------------------------------
 # Functions
 # ------------------------------------------------------------------------
@@ -17,13 +19,39 @@ def updateScreen():
 
             if "Soldier" in object_on_screen.name:
                 player.number_of_soldiers -= 1
+                player.population -= 1
             elif "Archer" in object_on_screen.name:
                 player.number_of_archers -= 1
+                player.population -= 1
             elif "Tank" in object_on_screen.name:
                 player.number_of_tanks -= 1
+                player.population -= 1
 
-            #player.army.remove(object_on_screen)
-            player.population -= 1
+            if object_on_screen.name == "BOSS1":
+                boss = enemy.addBoss(screen, 800, 100, 400, "BOSS2", "./data/boss/boss2.png")
+                boss.scalePicture(1.2)
+                all_objects_on_screen.append(boss)
+                player.gold_per_second += 10
+                player.gold += 1000
+
+            elif object_on_screen.name == "BOSS2":
+                boss = enemy.addBoss(screen, 700, 100, 800, "BOSS3", "./data/boss/boss3.png")
+                boss.scalePicture(1.3)
+                all_objects_on_screen.append(boss)
+                player.gold_per_second += 20
+                player.gold += 2000
+
+            elif object_on_screen.name == "BOSS3":
+                boss = enemy.addBoss(screen, 600, 100, 1200, "BOSS4", "./data/boss/boss4.png")
+                boss.scalePicture(1.4)
+                all_objects_on_screen.append(boss)
+                player.gold_per_second += 40
+                player.gold += 4000
+
+
+
+
+
 
         else:  # Torej je objekt "živ"
             if object_on_screen.selected:  # Če ma atribut 'selected' na true
@@ -65,7 +93,7 @@ mouse_clicks = (0, 0, 0)  # Keri knofi na miški so prtisjeni
 mouse_position = (411, 348)  # Kje je miška trenutno
 
 pygame.init()  # Da se pygame začne
-#screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)  # Kam bom sploh risu stvari
+# screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)  # Kam bom sploh risu stvari
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # Kam bom sploh risu stvari
 pygame.display.set_caption("Kris's game")  # Da mam svoj caption :3
 
@@ -93,12 +121,12 @@ if pygame.display.get_surface().get_size() == (1300, 750):
 done = False
 player_name = "Kristjan"
 player = units.Player(player_name, screen)
-enemy  = units.Player('Enemy', screen)
+enemy = units.Player('Enemy', screen)
 
 setPoints(player)
 clock = pygame.time.Clock()
 
-boss = enemy.addBoss(screen, 900, 100, 200, "./data/chimp.bmp")
+boss = enemy.addBoss(screen, 900, 100, 200, "BOSS1", "./data/boss/boss1.png")
 all_objects_on_screen.append(boss)
 
 if not debug:
@@ -122,7 +150,7 @@ while not done:  # main game loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
             done = True  # Če je, pol zaključi z igro
-            highscoreToTxt(players)
+            highscoreToTxt(player)
             continue
     pressed = pygame.key.get_pressed()
 
@@ -234,7 +262,7 @@ while not done:  # main game loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Preverim, če je nekdo prtisnu na križec
                 done = True  # Če je, pol zaključi z igro
-                highscoreToTxt(players)
+                highscoreToTxt(player)
                 continue
         if pressed[pygame.K_UP]:
             enemy.army[0].move("up")
@@ -296,13 +324,12 @@ while not done:  # main game loop
                 elif 636 < mouse_y < 695:
                     print("ADD Soldier5")
 
-        rect = Rectangle(WIDTH/2,HEIGHT/2, WIDTH/2, HEIGHT/2)
+        rect = Rectangle(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2)
         quadTree = QuadTree(rect, 4)
 
         for o in all_objects_on_screen:
-            neki = Point(o.x, o.y, o.r)
+            neki = Point(o.x, o.y, o.r, o)
             quadTree.insert(neki)
-
 
         if mouse_clicks != pygame.mouse.get_pressed():
             # al je nekdo pritisnu na miško al pa spustu knof
@@ -328,7 +355,7 @@ while not done:  # main game loop
                             for selected_object in all_objects_on_screen:
                                 if selected_object.selected:
                                     selected_object.setDestination(mouse_position[0], mouse_position[1])
-                                    selected_object.goTo(all_objects_on_screen, quadTree)
+                                    selected_object.goTo1(all_objects_on_screen, quadTree, boss)
                         else:
                             object.selected = 0
                             object.move_times = 0
@@ -336,7 +363,7 @@ while not done:  # main game loop
 
         for selected_object in all_objects_on_screen:
             if selected_object.moveable and selected_object.distance > 10:
-                selected_object.goTo(all_objects_on_screen, quadTree)
+                selected_object.goTo1(all_objects_on_screen, quadTree, boss)
             else:
                 selected_object.moving = 0
 

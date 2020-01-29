@@ -24,7 +24,10 @@ class Unit:
         self.name = name  # Kako je temu unitu bolj natančno ime
         self.screen = screen  # kam sploh rišeš
         self.image = pygame.image.load(image_path)  # prvi sprite
-        self.image = pygame.transform.scale(self.image, (50, 50))  # prvi sprite
+        if "boss" not in image_path:
+            self.image = pygame.transform.scale(self.image, (50, 50))  # prvi sprite
+        else:
+            self.image = pygame.transform.scale(self.image, (250, 250))  # prvi sprite
         self.image_selected = pygame.image.load(image_path)  # prvi sprite
 
         self.rect = self.image.get_rect()
@@ -87,6 +90,7 @@ class Unit:
         self.center_x = self.x + (self.w // 2)
         self.center_y = self.y + (self.h // 2)
         self.r = sqrt(self.w ** 2 + self.h ** 2)
+
 
     def move(self, direction):
 
@@ -179,6 +183,50 @@ class Unit:
             self.updateCenter()
             self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (self.direction_y - self.center_y) ** 2)
             return self.distance
+
+    def goTo1(self, all_static_objects, quadTree, boss):
+        """
+        Ta funkcija premakne ta unit tja kamor je namenjen (direction_x, y)
+        :return: razdaljo od cilja
+        """
+        if self.moveable == 0:  # Če je prišlo do "napake" in želim prestaviti objekt, ki je statičen
+            return -1
+
+        rect = Rectangle(self.x, self.y, self.w, self.h)
+        vse_tocke_v_mojem_obmocju = quadTree.query(rect)
+
+
+        distance = sqrt((boss.x - self.center_x) ** 2 + (
+                boss.y - self.center_y) ** 2)  # Povej kolk stran si
+
+
+        if distance < self.range:
+            self.fight(boss)
+            return
+
+
+        for tocka in vse_tocke_v_mojem_obmocju:
+            if "BOSS" in tocka.unit.name:
+                self.fight(tocka.unit)
+                return
+
+            if self.distance > 10:
+
+                if self.x < self.direction_x:
+                    self.move("right")
+                else:
+                    self.move("left")
+
+                if self.y < self.direction_y:
+                    self.move("down")
+                else:
+                    self.move("up")
+
+        self.distance = sqrt((self.direction_x - self.center_x) ** 2 + (
+                self.direction_y - self.center_y) ** 2)  # Povej kolk stran si
+
+
+
 
     def setDestination(self, dest_x, dest_y):
 
@@ -280,7 +328,7 @@ class Archer(Unit):
         self.hp = 20
         self.max_hp = 20
         self.attack = 10
-        self.range = 50
+        self.range = 150
         self.cost = 70
         self.reload_time = 1.5
         self.moveable = 1
@@ -300,12 +348,11 @@ class Boss(Unit):
         self.moveable = 0
         self.hp = 200
         self.max_hp = 200
-        self.attack = 10
+        self.attack = 50
         self.range = 20
         self.cost = 70
         self.reload_time = 1.5
-        self.moveable = 1
-        self.scalePicture(3)
+        self.moveable = 0
 
     def levelUp(self):
         pass
@@ -315,7 +362,7 @@ class Tank(Unit):
         """Initialize the soldier and set its starting position."""
         super().__init__(screen, x, y, image_path, name, player)
         self.moveable = 1
-        self.hp = 300
+        self.hp = 150
         self.speed = 0.5
         self.attack = 20
         self.range = 70
@@ -385,8 +432,8 @@ class Player:
 
     def addSoldier(self):
         if time.time() - self.last_soldier_added > self.soldier_spawn_rate and (self.gold - 50) > 0 and self.population < self.max_population:
-            soldier = Soldier(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                              './data/player1/soldier.png', 'Soldier' + str(len(self.army)),
+            soldier = Soldier(self.screen, 200 + self.population * 30, 300 + self.population* 30,
+                              './data/player1/soldier.png', 'Soldier' + str(self.population),
                               self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
@@ -402,8 +449,8 @@ class Player:
 
     def addArcher(self):
         if time.time() - self.last_soldier_added > self.archer_spawn_rate and (self.gold - 70) > 0 and self.population < self.max_population:
-            soldier = Archer(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                             './data/player1/archer.png', 'Archer' + str(len(self.army)),
+            soldier = Archer(self.screen, 200 + self.population * 30, 300 + self.population * 30,
+                             './data/player1/archer.png', 'Archer' + str(self.population),
                              self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
@@ -412,13 +459,14 @@ class Player:
                 crash_sound = pygame.mixer.Sound("./data/whiff.wav")
                 pygame.mixer.Sound.play(crash_sound)
             self.number_of_archers += 1
+            self.population += 1
             return soldier
         return 0
 
     def addTank(self):
         if time.time() - self.last_soldier_added > self.tank_spawn_rate and (self.gold - 200) > 0 and self.population < self.max_population:
-            soldier = Tank(self.screen, 200 + len(self.army) * 30, 300 + len(self.army) * 30,
-                           './data/player1/tank.png', 'Tank' + str(len(self.army)),
+            soldier = Tank(self.screen, 200 + self.population * 30, 300 + self.population * 30,
+                           './data/player1/tank.png', 'Tank' + str(self.population),
                            self.name)
             self.army.append(soldier)
             self.last_soldier_added = time.time()
@@ -428,8 +476,8 @@ class Player:
             return soldier
         return 0
 
-    def addBoss(self, screen, x, y, hp, image_path):
-        boss = Boss(screen, x, y, image_path, "BOSS", "Enemy")
+    def addBoss(self, screen, x, y, hp, name, image_path):
+        boss = Boss(screen, x, y, image_path, name, "Enemy")
         boss.setHp(hp)
         self.army.append(boss)
         if self.sound_enabled:
