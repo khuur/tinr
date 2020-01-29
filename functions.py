@@ -180,7 +180,6 @@ class Rectangle:
         return (self.x - self.w < point.x < self.x + self.w and
                 self.y - self.h < point.y < self.y + self.h)
 
-
 class QuadTree:
     def __init__(self, rect, capacity):
         self.boundary = rect
@@ -261,3 +260,7 @@ class QuadTree:
                 found.append(point)
 
         return found
+
+
+class Node:
+    pass

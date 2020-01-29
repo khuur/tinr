@@ -136,6 +136,11 @@ class Unit:
             if self.moving == 1:
                 print("iscem nove komande kam morem it")
                 mreza = nafiliMrezo(all_static_objects, (self.x, self.y), (self.direction_x, self.direction_y))
+
+                for vrstica in mreza:
+                    for celica in vrstica:
+                        print(celica, end=" ")
+                    print("")
                 os.system('powershell.exe python a_star.py')
                 self.fromCoordinatesGetDirections()
                 return self.distance
